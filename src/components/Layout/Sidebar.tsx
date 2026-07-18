@@ -26,6 +26,11 @@ const Sidebar = ({ isCollapsed = false }: SidebarProps) => {
           <LayoutDashboard size={20} />
           {!isCollapsed && <span>Dashboard</span>}
         </NavLink>
+        
+        <NavLink to="/riders/cod-settlements" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"} title="COD Settlements" style={{ color: "#f97316" }}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 18V6"></path></svg>
+          {!isCollapsed && <span>COD Settlements</span>}
+        </NavLink>
 
         <NavLink to="/system/blocked-accounts" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"} title="Blocked Accounts" style={{ color: "#ef4444" }}>
           <ShieldAlert size={20} />

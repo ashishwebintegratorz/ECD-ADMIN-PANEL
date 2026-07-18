@@ -15,6 +15,7 @@ import SpecialDishes from './pages/Restaurants/SpecialDishes';
 import MenuApprovals from './pages/Restaurants/MenuApprovals';
 import AdminLogin from './pages/Auth/AdminLogin';
 import RiderPayouts from './pages/Riders/RiderPayouts';
+import RiderCodSettlements from './pages/Riders/RiderCodSettlements';
 import RiderStatus from './pages/Riders/RiderStatus';
 import RiderDetails from './pages/Riders/RiderDetails';
 import RiderOrders from './pages/Riders/RiderOrders';
@@ -67,6 +68,7 @@ function App() {
                     <Route path="/riders/details" element={<RiderDetails />} />
                     <Route path="/riders/status" element={<RiderStatus />} />
                     <Route path="/riders/payouts" element={<RiderPayouts />} />
+                    <Route path="/riders/cod-settlements" element={<RiderCodSettlements />} />
                     <Route path="/riders/orders" element={<RiderOrders />} />
                     <Route path="/riders/system-manage" element={<RiderSystemManage />} />
                     <Route path="/system/blocked-accounts" element={<BlockedAccounts />} />
