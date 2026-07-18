@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Store, PlusCircle, Menu, ShieldAlert, Settings, Users, Star, Sliders, Image as ImageIcon, BellRing, Activity, CheckCircle, RefreshCcw } from 'lucide-react';
+import { LayoutDashboard, Store, PlusCircle, Menu, ShieldAlert, Settings, Users, Star, Sliders, Image as ImageIcon, BellRing, Activity, CheckCircle, RefreshCcw, MessageSquareWarning } from 'lucide-react';
 import './Sidebar.css';
 
 interface SidebarProps {
@@ -40,6 +40,11 @@ const Sidebar = ({ isCollapsed = false }: SidebarProps) => {
         <NavLink to="/users" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"} title="User Management System">
           <Users size={20} />
           {!isCollapsed && <span>User Management</span>}
+        </NavLink>
+        
+        <NavLink to="/issues" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"} title="Issue Management" style={{ color: "#eab308" }}>
+          <MessageSquareWarning size={20} />
+          {!isCollapsed && <span>Issue Management</span>}
         </NavLink>
 
         <NavLink to="/banners" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"} title="Banner Management">
