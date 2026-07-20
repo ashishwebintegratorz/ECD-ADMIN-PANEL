@@ -8,6 +8,7 @@ interface CodSummary {
     phone: string;
     riderId: string;
     codBalance: number;
+    codEarnings: number;
     walletBalance: number;
     amountToPayAdmin: number;
     totalOrders: number;
@@ -151,7 +152,7 @@ const RiderCodSettlements: React.FC = () => {
                                             <span className="amount collected">₹{(rider.codBalance || 0).toFixed(0)}</span>
                                         </td>
                                         <td>
-                                            <span className="amount offset">- ₹{(rider.walletBalance || 0).toFixed(0)}</span>
+                                            <span className="amount offset">- ₹{(rider.codEarnings || 0).toFixed(0)}</span>
                                         </td>
                                         <td>
                                             <span className="amount due">₹{(rider.amountToPayAdmin || 0).toFixed(0)}</span>
