@@ -9,16 +9,22 @@ interface SidebarProps {
 const Sidebar = ({ isCollapsed = false }: SidebarProps) => {
   return (
     <aside className={`sidebar glass-panel ${isCollapsed ? 'collapsed' : ''}`}>
-      <div className="sidebar-header">
-        <h2 className="logo-text">
-          {isCollapsed ? (
-            <span style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
-              E<span className="highlight">A</span>
-            </span>
-          ) : (
-            <>ECD <span className="highlight">Admin</span></>
-          )}
-        </h2>
+      <div className="sidebar-header" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', padding: isCollapsed ? '1rem 0' : '1rem 1rem' }}>
+        <img 
+          src="/logo.png" 
+          alt="ECD Kart Logo" 
+          style={{ 
+            height: isCollapsed ? '42px' : '48px', 
+            maxHeight: '52px',
+            objectFit: 'contain', 
+            flexShrink: 0
+          }} 
+        />
+        {!isCollapsed && (
+          <h2 className="logo-text" style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, whiteSpace: 'nowrap', color: 'var(--text-primary)' }}>
+            ECD <span className="highlight" style={{ color: 'var(--accent-primary)' }}>Admin</span>
+          </h2>
+        )}
       </div>
 
       <nav className="sidebar-nav">
@@ -27,12 +33,12 @@ const Sidebar = ({ isCollapsed = false }: SidebarProps) => {
           {!isCollapsed && <span>Dashboard</span>}
         </NavLink>
         
-        <NavLink to="/riders/cod-settlements" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"} title="COD Settlements" style={{ color: "#f97316" }}>
+        <NavLink to="/riders/cod-settlements" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"} title="COD Settlements">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 18V6"></path></svg>
           {!isCollapsed && <span>COD Settlements</span>}
         </NavLink>
 
-        <NavLink to="/system/blocked-accounts" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"} title="Blocked Accounts" style={{ color: "#ef4444" }}>
+        <NavLink to="/system/blocked-accounts" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"} title="Blocked Accounts">
           <ShieldAlert size={20} />
           {!isCollapsed && <span>Blocked Accounts</span>}
         </NavLink>
@@ -42,7 +48,7 @@ const Sidebar = ({ isCollapsed = false }: SidebarProps) => {
           {!isCollapsed && <span>User Management</span>}
         </NavLink>
         
-        <NavLink to="/issues" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"} title="Issue Management" style={{ color: "#eab308" }}>
+        <NavLink to="/issues" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"} title="Issue Management">
           <MessageSquareWarning size={20} />
           {!isCollapsed && <span>Issue Management</span>}
         </NavLink>
@@ -52,17 +58,17 @@ const Sidebar = ({ isCollapsed = false }: SidebarProps) => {
           {!isCollapsed && <span>Banners</span>}
         </NavLink>
 
-        <NavLink to="/push-notifications" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"} title="Push Notifications" style={{ color: "#8b5cf6" }}>
+        <NavLink to="/push-notifications" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"} title="Push Notifications">
           <BellRing size={20} />
           {!isCollapsed && <span>Push Notifications</span>}
         </NavLink>
 
-        <NavLink to="/coupons" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"} title="Coupon Management" style={{ color: "#10b981" }}>
+        <NavLink to="/coupons" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"} title="Coupon Management">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 15h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H2v-6z"/><path d="M22 15h-2a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2v-6z"/><rect x="2" y="3" width="20" height="18" rx="2" ry="2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
           {!isCollapsed && <span>Coupon Management</span>}
         </NavLink>
 
-        <NavLink to="/refunds" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"} title="Refund Management" style={{ color: "#3b82f6" }}>
+        <NavLink to="/refunds" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"} title="Refund Management">
           <RefreshCcw size={20} />
           {!isCollapsed && <span>Refunds</span>}
         </NavLink>
@@ -89,7 +95,7 @@ const Sidebar = ({ isCollapsed = false }: SidebarProps) => {
             <Star size={20} />
             {!isCollapsed && <span>Special Dishes</span>}
           </NavLink>
-          <NavLink to="/restaurants/approvals" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"} title="Menu Approvals" style={{ color: "#f59e0b" }}>
+          <NavLink to="/restaurants/approvals" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"} title="Menu Approvals">
             <CheckCircle size={20} />
             {!isCollapsed && <span>Menu Approvals</span>}
           </NavLink>

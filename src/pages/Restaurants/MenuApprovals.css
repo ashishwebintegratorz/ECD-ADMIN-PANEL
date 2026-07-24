@@ -219,8 +219,8 @@
 
 .approval-card-footer {
   padding: 16px;
-  border-top: 1px solid var(--glass-border);
-  background: rgba(0, 0, 0, 0.1);
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
 }
 
 .selling-price-input {

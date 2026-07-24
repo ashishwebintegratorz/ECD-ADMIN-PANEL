@@ -20,6 +20,8 @@
 .table-wrapper {
   overflow: hidden;
   border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
 }
 
 .riders-table {
@@ -31,15 +33,15 @@
 .riders-table td {
   padding: 16px;
   text-align: left;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .riders-table th {
   font-weight: 600;
-  color: var(--text-primary);
+  color: #16A34A;
   font-size: 14px;
-  background: rgba(255, 255, 255, 0.05);
-  border-bottom: 2px solid var(--border-color);
+  background: #F0FDF4;
+  border-bottom: 2px solid #DCFCE7;
 }
 
 .riders-table td {
@@ -57,35 +59,36 @@
 }
 
 .status-active {
-  background: #f0fdf4;
-  color: #16a34a;
+  background: #F0FDF4;
+  color: #16A34A;
 }
 
 .status-pending {
-  background: #fffbeb;
-  color: #d97706;
+  background: #FFFBEB;
+  color: #D97706;
 }
 
 .status-suspended {
-  background: #fef2f2;
-  color: #dc2626;
+  background: #FEF2F2;
+  color: #DC2626;
 }
 
 .verified {
-  background: #e0e7ff;
-  color: #4f46e5;
+  background: #F0FDF4;
+  color: #16A34A;
+  border: 1px solid #BBF7D0;
 }
 
 .unverified {
-  background: #f1f5f9;
-  color: #64748b;
+  background: #F1F5F9;
+  color: #64748B;
 }
 
 .btn-view {
   padding: 6px 16px;
   background: transparent;
-  color: #2563eb;
-  border: 1px solid #2563eb;
+  color: var(--accent-hover);
+  border: 1px solid var(--accent-primary);
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
@@ -94,7 +97,7 @@
 }
 
 .btn-view:hover {
-  background: #2563eb;
+  background: var(--accent-primary);
   color: white;
 }
 
@@ -104,22 +107,22 @@
   align-items: center;
   padding: 20px;
   gap: 15px;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-top: 1px solid var(--border-color);
 }
 
 .pagination button {
   padding: 8px 16px;
   border-radius: 6px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
   background: white;
   cursor: pointer;
   font-weight: 600;
-  color: #334155;
+  color: var(--text-primary);
   transition: background 0.2s;
 }
 
 .pagination button:hover:not(:disabled) {
-  background: #f1f5f9;
+  background: var(--bg-tertiary);
 }
 
 .pagination button:disabled {
@@ -132,6 +135,8 @@
   max-width: 800px !important;
   max-height: 90vh;
   overflow-y: auto;
+  background: #FFFFFF !important;
+  border: 1px solid var(--border-color);
 }
 
 .modal-header {
@@ -139,12 +144,13 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 16px;
 }
 
 .modal-header h2 {
   margin: 0;
+  color: var(--text-primary);
 }
 
 .close-btn {
@@ -152,15 +158,15 @@
   border: none;
   font-size: 28px;
   cursor: pointer;
-  color: #64748b;
+  color: var(--text-secondary);
 }
 
 .close-btn:hover {
-  color: #0f172a;
+  color: var(--text-primary);
 }
 
 .info-section {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-tertiary);
   padding: 20px;
   border-radius: 12px;
   margin-bottom: 24px;
@@ -180,7 +186,7 @@
 }
 
 .ml-2 {
-  margin-left: 0; /* Changed from 8px since we are using gap */
+  margin-left: 0;
 }
 
 .documents-section {
@@ -210,9 +216,10 @@
   border-radius: 12px;
   padding: 16px;
   text-align: center;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-secondary);
   display: flex;
   flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 }
 
 .doc-card h4 {
@@ -230,6 +237,7 @@
   cursor: zoom-in;
   margin-bottom: 16px;
   transition: transform 0.2s;
+  border: 1px solid var(--border-color);
 }
 
 .doc-card img:hover {
@@ -238,7 +246,7 @@
 
 .no-doc {
   height: 120px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-tertiary);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -246,7 +254,7 @@
   color: var(--text-secondary);
   margin-bottom: 16px;
   font-weight: 500;
-  border: 2px dashed rgba(255, 255, 255, 0.1);
+  border: 2px dashed var(--border-color);
 }
 
 .edit-doc-btn {
@@ -254,10 +262,10 @@
   display: block;
   text-align: center;
   padding: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--accent-light);
+  border: 1px solid #BBF7D0;
   border-radius: 6px;
-  color: var(--text-primary);
+  color: #16A34A;
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
@@ -266,12 +274,12 @@
 }
 
 .edit-doc-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--accent-primary);
   color: white;
 }
 
 .action-panel {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-tertiary);
   padding: 24px;
   border-radius: 12px;
   border: 1px solid var(--border-color);
@@ -312,21 +320,21 @@
 }
 
 .btn-verify {
-  background: #10b981;
+  background: var(--accent-primary);
   color: white;
 }
 
 .btn-verify:hover {
-  background: #059669;
+  background: var(--accent-hover);
 }
 
 .btn-block {
-  background: #ef4444;
+  background: #EF4444;
   color: white;
 }
 
 .btn-block:hover {
-  background: #dc2626;
+  background: #DC2626;
 }
 
 .btn-message {
@@ -345,7 +353,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(0, 0, 0, 0.85);
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -381,3 +389,4 @@
 .close-fullscreen:hover {
   background: rgba(255, 255, 255, 0.4);
 }
+

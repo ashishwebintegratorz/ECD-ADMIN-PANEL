@@ -116,12 +116,12 @@ const RestaurantPayouts = () => {
               {restaurants.map(rest => (
                 <tr key={rest._id}>
                   <td>
-                    <div style={{ fontWeight: 600, color: '#ffffff', fontSize: '1.1rem' }}>{rest.name}</div>
+                    <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '1.1rem' }}>{rest.name}</div>
                     {!rest.isActive && <div className="error-text" style={{ fontSize: '0.85rem' }}>(Offline)</div>}
                   </td>
-                  <td style={{ textTransform: 'capitalize', color: '#ffffff' }}>{rest.storeType}</td>
-                  <td style={{ color: '#ffffff' }}>{rest.phone || 'N/A'}</td>
-                  <td>{rest.upi || <span style={{ fontStyle: 'italic', color: '#ffffff' }}>Not set</span>}</td>
+                  <td style={{ textTransform: 'capitalize', color: 'var(--text-primary)' }}>{rest.storeType}</td>
+                  <td style={{ color: 'var(--text-primary)' }}>{rest.phone || 'N/A'}</td>
+                  <td>{rest.upi || <span style={{ fontStyle: 'italic', color: 'var(--text-secondary)' }}>Not set</span>}</td>
                   <td className="amount" style={{ fontSize: '1.1rem' }}>
                     ₹{rest.walletBalance?.toFixed(2) || '0.00'}
                   </td>

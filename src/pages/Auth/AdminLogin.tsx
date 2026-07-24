@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Phone, User, CheckCircle2, ShieldCheck, ChevronRight } from 'lucide-react';
+import { Lock, Phone, User, CheckCircle2, ChevronRight } from 'lucide-react';
 import { apiFetch } from '../../utils/api';
 import './AdminLogin.css';
 
@@ -84,8 +84,16 @@ const AdminLogin = () => {
     <div className="login-container">
       <div className="login-card glass-panel">
         <div className="login-header">
-          <div className="logo-icon">
-            <ShieldCheck size={40} color="var(--accent-primary)" />
+          <div className="logo-icon" style={{ background: 'transparent', marginBottom: '1.5rem' }}>
+            <img 
+              src="/logo.png" 
+              alt="ECD Kart Logo" 
+              style={{ 
+                height: '100px', 
+                maxHeight: '110px',
+                objectFit: 'contain'
+              }} 
+            />
           </div>
           <h1>Admin Portal</h1>
           <p>{mode === 'login' ? 'Sign in to access your dashboard' : mode === 'signup' ? 'Set up your admin account' : 'Verify your phone number'}</p>

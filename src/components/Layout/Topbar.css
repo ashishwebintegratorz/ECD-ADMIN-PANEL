@@ -4,28 +4,30 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 2rem;
-  border-radius: 0;
-  border-bottom: 1px solid var(--glass-border);
+  border-radius: 0 !important;
+  border-bottom: 1px solid var(--border-color);
   border-left: none;
   border-right: none;
   border-top: none;
-  background: rgba(15, 23, 42, 0.4);
+  background: var(--bg-secondary);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
 }
 
 .search-bar {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-tertiary);
   padding: 0.5rem 1rem;
-  border-radius: var(--radius-full);
+  border-radius: 0 !important;
   width: 300px;
-  border: 1px solid transparent;
+  border: 1px solid var(--border-color);
   transition: var(--transition);
 }
 
 .search-bar:focus-within {
   border-color: var(--accent-primary);
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--bg-secondary);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 .search-icon {
@@ -55,12 +57,12 @@
   position: relative;
   color: var(--text-secondary);
   padding: 0.5rem;
-  border-radius: 50%;
+  border-radius: 0 !important;
   transition: var(--transition);
 }
 
 .icon-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-tertiary);
   color: var(--text-primary);
 }
 
@@ -79,13 +81,13 @@
   align-items: center;
   gap: 0.75rem;
   cursor: pointer;
-  padding: 0.25rem;
-  border-radius: var(--radius-full);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0 !important;
   transition: var(--transition);
 }
 
 .profile-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-tertiary);
 }
 
 .avatar-icon {
@@ -100,9 +102,11 @@
 .profile-name {
   font-weight: 600;
   font-size: 0.9rem;
+  color: var(--text-primary);
 }
 
 .profile-role {
   font-size: 0.75rem;
   color: var(--text-secondary);
 }
+

@@ -24,20 +24,21 @@
 .data-table td {
   padding: 16px;
   text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .data-table th {
-  font-weight: 600;
-  color: #9ca3af;
-  background-color: rgba(0, 0, 0, 0.2);
+  font-weight: 700;
+  color: #16A34A;
+  background-color: #F0FDF4;
   text-transform: uppercase;
   font-size: 0.8rem;
   letter-spacing: 0.05em;
+  border-bottom: 2px solid #DCFCE7;
 }
 
 .data-table tbody tr:hover {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: var(--bg-tertiary);
 }
 
 .status-badge {
@@ -49,13 +50,14 @@
 }
 
 .status-active {
-  background-color: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  background-color: #F0FDF4;
+  color: #16A34A;
+  border: 1px solid #BBF7D0;
 }
 
 .status-inactive {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  background-color: #FEF2F2;
+  color: #EF4444;
 }
 
 /* Modal Styles */
@@ -65,7 +67,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(15, 23, 42, 0.4);
   backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
@@ -76,14 +78,15 @@
 }
 
 .modal-content {
-  background-color: #1f2937;
+  background-color: #FFFFFF;
   border-radius: 12px;
   width: 100%;
   max-width: 650px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
 
 .modal-header {
@@ -91,10 +94,10 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 0;
-  background-color: #1f2937;
+  background-color: #FFFFFF;
   z-index: 10;
 }
 
@@ -102,12 +105,13 @@
   font-size: 1.25rem;
   font-weight: 600;
   margin: 0;
+  color: var(--text-primary);
 }
 
 .close-btn {
   background: none;
   border: none;
-  color: #9ca3af;
+  color: var(--text-secondary);
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0;
@@ -115,7 +119,7 @@
 }
 
 .close-btn:hover {
-  color: white;
+  color: var(--text-primary);
 }
 
 .modal-form-container {
@@ -150,7 +154,7 @@
 .form-group label {
   margin-bottom: 8px;
   font-size: 0.9rem;
-  color: #d1d5db;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
@@ -159,18 +163,20 @@
 .form-group textarea {
   padding: 10px 12px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background-color: rgba(0, 0, 0, 0.2);
-  color: white;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
   font-size: 0.95rem;
-  transition: border-color 0.2s;
+  transition: all 0.2s;
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #10b981;
+  border-color: var(--accent-primary);
+  background-color: #FFFFFF;
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 .form-group input:disabled {
@@ -183,8 +189,8 @@
   justify-content: flex-end;
   gap: 12px;
   padding: 16px 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background-color: #1f2937;
+  border-top: 1px solid var(--border-color);
+  background-color: #FFFFFF;
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
 }
@@ -192,19 +198,20 @@
 .btn-secondary {
   padding: 10px 16px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--border-color);
   background-color: transparent;
-  color: white;
+  color: var(--text-primary);
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .btn-secondary:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--bg-tertiary);
 }
 
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+

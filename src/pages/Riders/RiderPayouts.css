@@ -34,19 +34,21 @@
 }
 
 .filter-controls button:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-tertiary);
 }
 
 .filter-controls button.active {
-  background: var(--primary-color);
+  background: var(--accent-primary);
   color: white;
-  border-color: var(--primary-color);
+  border-color: var(--accent-primary);
 }
 
 .payouts-table-container {
   padding: 0;
   overflow: hidden;
   border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
 }
 
 .payouts-table {
@@ -62,13 +64,13 @@
 }
 
 .payouts-table th {
-  background: transparent;
-  color: var(--text-secondary);
-  font-weight: 800;
+  background: #F0FDF4;
+  color: #16A34A;
+  font-weight: 700;
   text-transform: uppercase;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   letter-spacing: 0.5px;
-  border-bottom: 2px solid var(--border-color);
+  border-bottom: 2px solid #DCFCE7;
 }
 
 .payouts-table td {
@@ -78,7 +80,7 @@
 
 .payouts-table .amount {
   font-weight: 700;
-  color: #10b981;
+  color: #16A34A;
 }
 
 .status-badge {
@@ -106,17 +108,18 @@
 
 .btn-process {
   padding: 6px 16px;
-  background: #2563eb;
+  background: var(--accent-primary);
   color: white;
   border: none;
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s ease;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
 }
 
 .btn-process:hover {
-  background: #1d4ed8;
+  background: var(--accent-hover);
 }
 
 .text-muted {
@@ -132,7 +135,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(15, 23, 42, 0.4);
   backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
@@ -141,13 +144,13 @@
 }
 
 .modal-content {
-  background: var(--bg-primary);
+  background: #FFFFFF;
   padding: 30px;
   border-radius: 16px;
   width: 100%;
   max-width: 500px;
   border: 1px solid var(--border-color);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
 
 .modal-content h2 {
@@ -158,7 +161,7 @@
 }
 
 .rider-details {
-  background: var(--bg-secondary);
+  background: var(--bg-tertiary);
   padding: 20px;
   border-radius: 12px;
   margin-bottom: 24px;
@@ -222,7 +225,7 @@
   width: 100%;
   padding: 12px;
   border: 1px solid var(--border-color);
-  background: var(--bg-secondary);
+  background: var(--bg-tertiary);
   color: var(--text-primary);
   border-radius: 8px;
   font-size: 15px;
@@ -231,7 +234,9 @@
 }
 
 .admin-actions input:focus {
-  border-color: var(--primary-color);
+  border-color: var(--accent-primary);
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 .modal-buttons {
@@ -248,7 +253,7 @@
   cursor: pointer;
   border: 2px solid transparent;
   transition: all 0.2s ease;
-  background: var(--bg-secondary);
+  background: var(--bg-tertiary);
 }
 
 .btn-decline {
@@ -262,12 +267,12 @@
 }
 
 .btn-approve {
-  border-color: #10b981 !important;
-  color: #10b981;
+  border-color: var(--accent-primary) !important;
+  color: #16a34a;
 }
 
 .btn-approve.selected {
-  background: #10b981;
+  background: var(--accent-primary);
   color: white;
 }
 
@@ -290,17 +295,18 @@
 }
 
 .btn-cancel:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-tertiary);
 }
 
 .btn-submit {
   padding: 10px 24px;
-  background: var(--primary-color);
+  background: var(--accent-primary);
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
 }
 
 .btn-submit:disabled {
@@ -309,10 +315,11 @@
 }
 
 .btn-submit:hover:not(:disabled) {
-  filter: brightness(1.1);
+  background: var(--accent-hover);
 }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+

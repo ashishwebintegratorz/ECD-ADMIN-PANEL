@@ -54,15 +54,15 @@
   gap: 1.5rem;
   align-items: center;
   padding: 1rem;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   transition: var(--transition);
 }
 
 .item-row:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: var(--glass-border);
+  background: var(--bg-secondary);
+  border-color: var(--accent-primary);
 }
 
 .item-image-upload {
@@ -70,7 +70,7 @@
   width: 80px;
   height: 80px;
   border-radius: var(--radius-md);
-  border: 2px dashed var(--glass-border);
+  border: 2px dashed var(--border-color);
   overflow: hidden;
   cursor: pointer;
   flex-shrink: 0;
@@ -89,7 +89,7 @@
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-tertiary);
 }
 
 .image-placeholder span {
@@ -104,8 +104,8 @@
 }
 
 .item-input {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--glass-border);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   padding: 0.75rem 1rem;
   border-radius: var(--radius-md);
   color: var(--text-primary);
@@ -116,7 +116,8 @@
 
 .item-input:focus {
   border-color: var(--accent-primary);
-  background: rgba(255, 255, 255, 0.08);
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 .price-input-wrapper {

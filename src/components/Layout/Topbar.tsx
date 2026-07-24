@@ -31,11 +31,20 @@ const Topbar = ({ onToggleSidebar }: TopbarProps) => {
 
   return (
     <header className="topbar glass-panel" style={{ position: 'relative', zIndex: 50, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <div className="topbar-logo" style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '2px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <button onClick={onToggleSidebar} style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--text-primary)', cursor: 'pointer', padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Toggle Sidebar">
-          <Menu size={20} />
+      <div className="topbar-logo" style={{ fontSize: '1.4rem', fontWeight: 800, letterSpacing: '1px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+        <button onClick={onToggleSidebar} style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '0', color: 'var(--text-primary)', cursor: 'pointer', padding: '0.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Toggle Sidebar">
+          <Menu size={24} />
         </button>
-        <span>ECD KART</span>
+        <img 
+          src="/logo.png" 
+          alt="ECD Kart Logo" 
+          style={{ 
+            height: '60px', 
+            maxHeight: '64px',
+            objectFit: 'contain'
+          }} 
+        />
+        <span style={{ fontWeight: 800, letterSpacing: '1px' }}>ECD KART</span>
       </div>
 
       <div className="topbar-actions">

@@ -163,14 +163,14 @@ const CouponManagement = () => {
       <div className="coupons-header">
         <div>
           <h1 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.5rem', fontWeight: 'bold' }}>
-            <Ticket size={28} className="text-primary" style={{ color: '#10b981' }} />
+            <Ticket size={28} className="text-primary" style={{ color: '#22C55E' }} />
             Coupon Management
           </h1>
-          <p style={{ color: '#9ca3af', marginTop: '8px' }}>Manage discount codes and promotions.</p>
+          <p style={{ color: 'var(--text-secondary)', marginTop: '8px' }}>Manage discount codes and promotions.</p>
         </div>
         <button 
           className="btn-primary" 
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#10b981' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#22C55E' }}
           onClick={openAddModal}
         >
           <Plus size={18} />
@@ -180,13 +180,13 @@ const CouponManagement = () => {
 
       <div className="glass-panel" style={{ padding: '20px', marginBottom: '24px', display: 'flex', gap: '16px', alignItems: 'center' }}>
         <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
-          <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} />
+          <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
           <input
             type="text"
             placeholder="Search by coupon code..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ width: '100%', padding: '10px 10px 10px 40px', borderRadius: '8px', border: '1px solid #374151', backgroundColor: 'rgba(17, 24, 39, 0.7)', color: 'white' }}
+            style={{ width: '100%', padding: '10px 10px 10px 40px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-primary)' }}
           />
         </div>
       </div>
@@ -357,7 +357,7 @@ const CouponManagement = () => {
 
               <div className="modal-footer">
                 <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)}>Cancel</button>
-                <button type="submit" className="btn-primary" style={{ backgroundColor: '#10b981' }}>{editingId ? 'Update Coupon' : 'Create Coupon'}</button>
+                <button type="submit" className="btn-primary" style={{ backgroundColor: '#22C55E' }}>{editingId ? 'Update Coupon' : 'Create Coupon'}</button>
               </div>
             </form>
           </div>

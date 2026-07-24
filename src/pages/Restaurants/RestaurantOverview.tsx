@@ -286,11 +286,11 @@ const RestaurantOverview = () => {
               <div>
                 <div style={{ marginBottom: '0.5rem' }}>
                   <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Name</label>
-                  <input type="text" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} style={{ width: '100%', padding: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', borderRadius: '4px' }} />
+                  <input type="text" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} style={{ width: '100%', padding: '0.5rem', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '4px' }} />
                 </div>
                 <div style={{ marginBottom: '0.5rem' }}>
                   <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Phone</label>
-                  <input type="text" value={editForm.phone} onChange={e => setEditForm({...editForm, phone: e.target.value})} style={{ width: '100%', padding: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', borderRadius: '4px' }} />
+                  <input type="text" value={editForm.phone} onChange={e => setEditForm({...editForm, phone: e.target.value})} style={{ width: '100%', padding: '0.5rem', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '4px' }} />
                 </div>
                 <button onClick={handleSaveChanges} disabled={isUpdating} style={{ padding: '0.5rem 1rem', background: 'var(--accent-primary)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', marginTop: '0.5rem' }}>
                   {isUpdating ? 'Saving...' : 'Save Name & Phone'}

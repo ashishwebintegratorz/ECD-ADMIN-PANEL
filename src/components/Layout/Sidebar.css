@@ -3,14 +3,15 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  border-radius: 0;
-  border-right: 1px solid var(--glass-border);
+  border-radius: 0 !important;
+  border-right: 1px solid var(--border-color);
   border-left: none;
   border-top: none;
   border-bottom: none;
-  background: rgba(15, 23, 42, 0.4);
+  background: var(--bg-secondary);
   overflow-y: auto;
   transition: width 0.3s ease;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.02);
 }
 
 .sidebar.collapsed {
@@ -24,16 +25,17 @@
   background: transparent;
 }
 .sidebar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  background: #CBD5E1;
+  border-radius: 0 !important;
 }
 .sidebar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: #94A3B8;
 }
 
 .sidebar-header {
   padding: 2rem 1.5rem;
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--border-color);
+  border-radius: 0 !important;
 }
 
 .sidebar.collapsed .sidebar-header {
@@ -46,6 +48,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: 1px;
+  color: var(--text-primary);
 }
 
 .logo-text .highlight {
@@ -75,9 +78,10 @@
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: var(--text-secondary);
+  color: var(--accent-primary);
   padding: 0 0.5rem;
   margin-bottom: 0.25rem;
+  font-weight: 700;
 }
 
 .sidebar.collapsed .nav-label {
@@ -88,8 +92,8 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.6rem 0.8rem;
-  border-radius: var(--radius-md);
+  padding: 0.65rem 0.85rem;
+  border-radius: 0 !important;
   color: var(--text-secondary);
   font-weight: 500;
   transition: var(--transition);
@@ -102,10 +106,11 @@
   margin: 0;
   justify-content: center;
   align-items: center;
+  border-radius: 0 !important;
 }
 
 .sidebar.collapsed .nav-item.active svg {
-  filter: drop-shadow(0 0 8px var(--accent-primary));
+  filter: drop-shadow(0 0 6px var(--accent-primary));
   color: var(--accent-primary);
 }
 
@@ -114,12 +119,14 @@
 }
 
 .nav-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-tertiary);
   color: var(--text-primary);
 }
 
 .nav-item.active {
-  background: var(--accent-glow);
-  color: var(--text-primary);
-  border-left: 3px solid var(--accent-primary);
+  background: var(--accent-light);
+  color: var(--accent-hover);
+  border-left: 4px solid var(--accent-primary);
+  font-weight: 600;
 }
+

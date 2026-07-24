@@ -82,8 +82,8 @@
 .btn-view-history {
   padding: 6px 16px;
   background: transparent;
-  color: #2563eb;
-  border: 1px solid #2563eb;
+  color: var(--accent-hover);
+  border: 1px solid var(--accent-primary);
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
@@ -91,7 +91,7 @@
 }
 
 .btn-view-history:hover {
-  background: #2563eb;
+  background: var(--accent-primary);
   color: white;
 }
 

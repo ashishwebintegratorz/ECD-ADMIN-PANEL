@@ -245,12 +245,12 @@ const MenuManagement = () => {
             <form onSubmit={handleSaveItem} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div className="form-group">
                 <label>Item Name</label>
-                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-md)', color: 'white' }} />
+                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} style={{ width: '100%', padding: '0.75rem', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', color: 'var(--text-primary)' }} />
               </div>
 
               <div className="form-group">
                 <label>Description</label>
-                <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} rows={2} style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-md)', color: 'white', resize: 'none' }} />
+                <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} rows={2} style={{ width: '100%', padding: '0.75rem', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', color: 'var(--text-primary)', resize: 'none' }} />
               </div>
 
               <div className="form-group">
@@ -264,7 +264,7 @@ const MenuManagement = () => {
                     accept="image/*" 
                     onChange={handleImageUpload} 
                     disabled={imageUploading}
-                    style={{ flex: 1, padding: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-md)', color: 'white' }} 
+                    style={{ flex: 1, padding: '0.5rem', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', color: 'var(--text-primary)' }} 
                   />
                 </div>
                 {imageUploading && <span style={{ fontSize: '0.8rem', color: 'var(--accent-primary)', marginTop: '0.5rem', display: 'block' }}>Uploading image...</span>}
@@ -273,21 +273,21 @@ const MenuManagement = () => {
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <div className="form-group" style={{ flex: 1 }}>
                   <label>Selling Price (₹)</label>
-                  <input required type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-md)', color: 'white' }} />
+                  <input required type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} style={{ width: '100%', padding: '0.75rem', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', color: 'var(--text-primary)' }} />
                 </div>
                 <div className="form-group" style={{ flex: 1 }}>
                   <label>B2B Price (₹)</label>
-                  <input required type="number" value={formData.b2bPrice} onChange={e => setFormData({...formData, b2bPrice: e.target.value})} style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-md)', color: 'white' }} />
+                  <input required type="number" value={formData.b2bPrice} onChange={e => setFormData({...formData, b2bPrice: e.target.value})} style={{ width: '100%', padding: '0.75rem', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', color: 'var(--text-primary)' }} />
                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <div className="form-group" style={{ flex: 1 }}>
                   <label>Food Type</label>
-                  <select value={formData.foodType} onChange={e => setFormData({...formData, foodType: e.target.value as any})} style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-md)', color: 'white' }}>
-                    <option value="veg" style={{ color: 'black' }}>Veg</option>
-                    <option value="non-veg" style={{ color: 'black' }}>Non-Veg</option>
-                    <option value="vegan" style={{ color: 'black' }}>Vegan</option>
+                  <select value={formData.foodType} onChange={e => setFormData({...formData, foodType: e.target.value as any})} style={{ width: '100%', padding: '0.75rem', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', color: 'var(--text-primary)' }}>
+                    <option value="veg">Veg</option>
+                    <option value="non-veg">Non-Veg</option>
+                    <option value="vegan">Vegan</option>
                   </select>
                 </div>
                 <div className="form-group" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
