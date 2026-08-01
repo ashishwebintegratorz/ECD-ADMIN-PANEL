@@ -72,7 +72,8 @@ const BlockedAccounts = () => {
     setActionLoading(id);
     try {
       await apiFetch(`/restaurants/${id}/toggle-active`, {
-        method: 'PATCH'
+        method: 'PATCH',
+        body: JSON.stringify({ isActive: true })
       });
       // Remove from list
       setRestaurants(restaurants.filter(r => r._id !== id));
