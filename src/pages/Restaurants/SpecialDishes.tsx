@@ -22,6 +22,7 @@ const SpecialDishes = () => {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
 
   // Form State
   const [name, setName] = useState('');
@@ -74,20 +75,10 @@ const SpecialDishes = () => {
       formData.append('ordering', ordering);
       formData.append('image', selectedFile);
 
-      const token = localStorage.getItem('token');
-
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/popular-dishes`, {
+      await apiFetch('/popular-dishes', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
         body: formData
       });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to add dish');
-      }
 
       closeModal();
       fetchDishes();
@@ -115,6 +106,7 @@ const SpecialDishes = () => {
     setOrdering('0');
     setSelectedFile(null);
     setPreviewUrl(null);
+    setIsAddingCategory(false);
     setIsModalOpen(true);
   };
 
@@ -186,12 +178,50 @@ const SpecialDishes = () => {
 
                 <div className="form-group">
                   <label>Category</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Biryani"
-                    value={category}
-                    onChange={e => setCategory(e.target.value)}
-                  />
+                  {isAddingCategory ? (
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <input
+                        type="text"
+                        placeholder="New Category Name"
+                        value={category}
+                        onChange={e => setCategory(e.target.value)}
+                        style={{ flex: 1 }}
+                      />
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          setIsAddingCategory(false);
+                          setCategory('');
+                        }}
+                        style={{ padding: '0 16px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <select 
+                        value={category}
+                        onChange={e => setCategory(e.target.value)}
+                        style={{ flex: 1, padding: '12px', border: '1px solid var(--border-color)', borderRadius: '8px', backgroundColor: 'var(--input-bg)', color: 'var(--text-color)' }}
+                      >
+                        <option value="">-- Select Category --</option>
+                        {Array.from(new Set(dishes.map(d => d.category).filter(Boolean))).map(cat => (
+                          <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                      </select>
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          setIsAddingCategory(true);
+                          setCategory('');
+                        }}
+                        style={{ padding: '0 16px', backgroundColor: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, whiteSpace: 'nowrap', boxShadow: '0 2px 4px rgba(16, 185, 129, 0.2)' }}
+                      >
+                        <Plus size={16} /> Add New
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="form-group">
@@ -217,15 +247,16 @@ const SpecialDishes = () => {
                   )}
 
                   <div className="file-input-wrapper">
-                    <button type="button" className="btn-upload">
+                    <button type="button" className="btn-upload" style={{ backgroundColor: '#3b82f6', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '1rem', boxShadow: '0 4px 6px rgba(59, 130, 246, 0.2)' }}>
                       <ImageIcon size={20} />
-                      {selectedFile ? selectedFile.name : "Choose an Image"}
+                      {selectedFile ? selectedFile.name : "Click here to choose an Image"}
                     </button>
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleFileChange}
                       required={!selectedFile}
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
                     />
                   </div>
                 </div>
