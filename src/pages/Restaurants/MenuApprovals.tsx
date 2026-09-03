@@ -163,7 +163,7 @@ const MenuApprovals = () => {
                     <div className="price-info">
                       <div className="b2b-price">
                         <span>B2B Price:</span>
-                        <strong>₹{item.b2bPrice}</strong>
+                        <strong>₹{item.b2bPrice || (item as any).price || 0}</strong>
                       </div>
                     </div>
                   </div>

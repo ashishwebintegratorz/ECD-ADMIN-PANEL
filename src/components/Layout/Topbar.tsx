@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { UserCircle, LogOut, Menu } from 'lucide-react';
+import NotificationDropdown from '../Notifications/NotificationDropdown';
 import './Topbar.css';
 
 interface TopbarProps {
@@ -47,7 +48,9 @@ const Topbar = ({ onToggleSidebar }: TopbarProps) => {
         <span style={{ fontWeight: 800, letterSpacing: '1px' }}>ECD KART</span>
       </div>
 
-      <div className="topbar-actions">
+      <div className="topbar-actions" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+        <NotificationDropdown />
+
         <div style={{ position: 'relative' }}>
           <div className="profile-btn" onClick={() => setShowDropdown(!showDropdown)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <UserCircle size={32} className="avatar-icon" />
