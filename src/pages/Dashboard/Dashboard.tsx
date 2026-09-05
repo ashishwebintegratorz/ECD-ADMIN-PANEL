@@ -3,6 +3,7 @@ import { DollarSign, Bike, Activity, Store, Download } from 'lucide-react';
 import { apiFetch } from '../../utils/api';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import DashboardZonesMap from './DashboardZonesMap';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -169,6 +170,9 @@ const Dashboard = () => {
         <div style={{ padding: '2rem', color: 'var(--text-secondary)' }}>Loading dashboard stats...</div>
       ) : (
         <>
+          {/* Live Delivery Zones & Operations Map Overview */}
+          <DashboardZonesMap />
+
           <div className="stats-grid">
             <div className="stat-card glass-panel">
               <div className="stat-icon-wrapper success">

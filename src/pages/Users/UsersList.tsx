@@ -121,30 +121,21 @@ const UsersList = () => {
           <span className="stat-value">{users.filter(u => u.orderCount > 0).length}</span>
         </div>
         <div className="stat-item" style={{ flex: '1', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-          <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '1.5rem', 
-              background: isCodEnabled ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', 
-              padding: '1rem 1.5rem', 
-              borderRadius: '12px', 
-              border: `2px solid ${isCodEnabled ? '#10b981' : '#ef4444'}`,
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-          }}>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary)' }}>Cash on Delivery</span>
-                  <span style={{ fontSize: '0.9rem', color: isCodEnabled ? '#10b981' : '#ef4444', fontWeight: 600 }}>
+          <div className={`cod-card-container ${isCodEnabled ? 'cod-card-enabled' : 'cod-card-disabled'}`}>
+              <div className="cod-info">
+                  <span className="cod-title">Cash on Delivery</span>
+                  <span className={`cod-status-text ${isCodEnabled ? 'enabled' : 'disabled'}`}>
                       {savingCod ? 'Saving...' : (isCodEnabled ? 'Currently ENABLED' : 'Currently DISABLED')}
                   </span>
               </div>
-              <label className="switch" style={{ margin: 0, transform: 'scale(1.3)' }}>
+              <label className="cod-toggle-switch">
                   <input 
                       type="checkbox" 
                       checked={isCodEnabled}
                       onChange={(e) => toggleCod(e.target.checked)}
                       disabled={savingCod}
                   />
-                  <span className="slider round" style={{ backgroundColor: isCodEnabled ? '#10b981' : '#ccc' }}></span>
+                  <span className="cod-slider"></span>
               </label>
           </div>
         </div>

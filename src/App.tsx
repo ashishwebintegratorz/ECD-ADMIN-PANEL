@@ -28,6 +28,7 @@ import PushNotificationPage from './pages/Admin/PushNotificationPage';
 import CouponManagement from './pages/Admin/CouponManagement';
 import RefundManagement from './pages/Refunds/RefundManagement';
 import IssueManagement from './pages/Issues/IssueManagement';
+import DeliveryZones from './pages/Zones/DeliveryZones';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const token = localStorage.getItem('token');
@@ -80,6 +81,7 @@ function App() {
                     <Route path="/coupons" element={<CouponManagement />} />
                     <Route path="/refunds" element={<RefundManagement />} />
                     <Route path="/issues" element={<IssueManagement />} />
+                    <Route path="/zones" element={<DeliveryZones />} />
                   </Routes>
                 </div>
               </div>
