@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Plus, Store, Clock } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiFetch, uploadFile } from '../../utils/api';
+import { validateFile } from '../../utils/fileValidation';
 import './RestaurantOverview.css';
 
 interface Restaurant {
@@ -109,9 +110,25 @@ const RestaurantOverview = () => {
 
   const handleImageUpload = async (field: 'logo' | 'coverImage' | 'accountDetail' | 'paymentQr', file: File) => {
     if (!selectedRestaurant) return;
+
+    const isDoc = field === 'accountDetail';
+    const validation = validateFile(file, {
+      maxSizeMB: isDoc ? 5 : 2,
+      recommendedSizeMB: isDoc ? 2 : 1,
+      allowedTypes: isDoc
+        ? ['application/pdf', 'image/jpeg', 'image/png', 'image/webp']
+        : ['image/jpeg', 'image/png', 'image/webp'],
+      typeDescription: isDoc ? 'PDF, JPG, PNG' : 'JPG, PNG, WEBP',
+    });
+
+    if (!validation.isValid) {
+      alert(validation.error);
+      return;
+    }
+
     setIsUpdating(true);
     try {
-      const url = await uploadFile(file);
+      const url = await uploadFile(file, { maxSizeMB: isDoc ? 5 : 2, recommendedSizeMB: isDoc ? 2 : 1 });
       await apiFetch(`/restaurants/admin/update/${selectedRestaurant._id}`, {
         method: 'PUT',
         body: JSON.stringify({ [field]: url })
@@ -314,10 +331,11 @@ const RestaurantOverview = () => {
                 ) : (
                   <div style={{ width: '100%', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'gray', fontSize: '0.8rem' }}>No Logo</div>
                 )}
-                <label style={{ display: 'block', marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--accent-primary)', cursor: 'pointer' }}>
+                <label style={{ display: 'block', marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--accent-primary)', cursor: 'pointer', fontWeight: 600 }}>
                   Upload New
                   <input type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && handleImageUpload('logo', e.target.files[0])} disabled={isUpdating} />
                 </label>
+                <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', display: 'block', marginTop: '2px' }}>Max: 2MB (Rec &lt;1MB)</span>
               </div>
 
               {/* License (Passbook mapping) */}
@@ -328,10 +346,11 @@ const RestaurantOverview = () => {
                 ) : (
                   <div style={{ width: '100%', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'gray', fontSize: '0.8rem' }}>No License</div>
                 )}
-                <label style={{ display: 'block', marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--accent-primary)', cursor: 'pointer' }}>
+                <label style={{ display: 'block', marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--accent-primary)', cursor: 'pointer', fontWeight: 600 }}>
                   Upload New
-                  <input type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && handleImageUpload('accountDetail', e.target.files[0])} disabled={isUpdating} />
+                  <input type="file" accept="image/*,application/pdf" hidden onChange={(e) => e.target.files?.[0] && handleImageUpload('accountDetail', e.target.files[0])} disabled={isUpdating} />
                 </label>
+                <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', display: 'block', marginTop: '2px' }}>Max: 5MB (PDF/Image)</span>
               </div>
             </div>
 

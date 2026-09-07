@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Image, Plus, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import './BannerManagement.css';
 import { apiFetch, uploadFile } from '../../utils/api';
+import { validateFile } from '../../utils/fileValidation';
 
 interface Banner {
   _id: string;
@@ -45,11 +46,18 @@ const BannerManagement = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    const validation = validateFile(file, { maxSizeMB: 2, recommendedSizeMB: 1, typeDescription: 'JPG, PNG, WEBP' });
+    if (!validation.isValid) {
+      alert(validation.error);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     try {
       setIsUploading(true);
       
       // Upload image first
-      const imageUrl = await uploadFile(file);
+      const imageUrl = await uploadFile(file, { maxSizeMB: 2, recommendedSizeMB: 1 });
       
       // Create banner record
       await apiFetch('/banners', {
@@ -60,9 +68,9 @@ const BannerManagement = () => {
       // Refresh list
       fetchBanners();
       alert('Banner uploaded successfully!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to upload banner:', error);
-      alert('Failed to upload banner.');
+      alert(error.message || 'Failed to upload banner.');
     } finally {
       setIsUploading(false);
       // Reset input so the same file can be selected again if needed
@@ -102,7 +110,9 @@ const BannerManagement = () => {
             <Image size={28} className="text-primary" />
             Banner Management
           </h1>
-          <p style={{ color: '#9ca3af', marginTop: '8px' }}>Manage homepage banners and promotional images.</p>
+          <p style={{ color: '#9ca3af', marginTop: '6px', fontSize: '0.875rem' }}>
+            Manage homepage promotional banners. (Max size: 2 MB, Recommended: under 1 MB • JPG, PNG, WEBP)
+          </p>
         </div>
         <input 
           type="file" 

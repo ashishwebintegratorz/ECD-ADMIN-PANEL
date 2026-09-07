@@ -6,6 +6,7 @@ import { useLoadScript } from '@react-google-maps/api';
 import './RestaurantOnboard.css';
 
 import { apiFetch, uploadFile } from '../../utils/api';
+import { validateFile } from '../../utils/fileValidation';
 
 const libraries: ("places")[] = ["places"];
 
@@ -122,12 +123,63 @@ const RestaurantOnboard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, inputRef]);
 
-  const [menuItems, setMenuItems] = useState([
-    { id: 'item-1', name: '', b2bPrice: '', sellingPrice: '', image: null, isVeg: true, description: '' }
+  const PRESET_PORTIONS = ['Full', 'Half', 'Quarter', '1 Pc', '2 Pcs', 'Small', 'Medium', 'Large'];
+
+  interface OnboardPortionOption {
+    name: string;
+    price: string;
+    b2bPrice: string;
+    isDefault: boolean;
+  }
+
+  interface OnboardMenuItem {
+    id: string;
+    name: string;
+    b2bPrice: string;
+    sellingPrice: string;
+    image: File | null;
+    isVeg: boolean;
+    description: string;
+    portions: OnboardPortionOption[];
+    showCustomPortionInput?: boolean;
+    customPortionInput?: string;
+  }
+
+  const [menuItems, setMenuItems] = useState<OnboardMenuItem[]>([
+    {
+      id: 'item-1',
+      name: '',
+      b2bPrice: '',
+      sellingPrice: '',
+      image: null,
+      isVeg: true,
+      description: '',
+      portions: [
+        { name: 'Full', price: '', b2bPrice: '', isDefault: true }
+      ],
+      showCustomPortionInput: false,
+      customPortionInput: '',
+    }
   ]);
 
   const addMenuItem = () => {
-    setMenuItems([...menuItems, { id: `item-${Date.now()}`, name: '', b2bPrice: '', sellingPrice: '', image: null, isVeg: true, description: '' }]);
+    setMenuItems([
+      ...menuItems,
+      {
+        id: `item-${Date.now()}`,
+        name: '',
+        b2bPrice: '',
+        sellingPrice: '',
+        image: null,
+        isVeg: true,
+        description: '',
+        portions: [
+          { name: 'Full', price: '', b2bPrice: '', isDefault: true }
+        ],
+        showCustomPortionInput: false,
+        customPortionInput: '',
+      }
+    ]);
   };
 
   const updateMenuItem = (id: string, field: string, value: string | boolean | null) => {
@@ -136,6 +188,100 @@ const RestaurantOnboard = () => {
 
   const removeMenuItem = (id: string) => {
     setMenuItems(menuItems.filter(item => item.id !== id));
+  };
+
+  const toggleItemPortion = (itemId: string, portionName: string) => {
+    setMenuItems(menuItems.map(item => {
+      if (item.id !== itemId) return item;
+      const currentPortions = item.portions || [];
+      const exists = currentPortions.some(p => p.name.toLowerCase() === portionName.toLowerCase());
+
+      if (exists) {
+        if (currentPortions.length <= 1) {
+          alert('At least one portion is required for a menu item.');
+          return item;
+        }
+        const filtered = currentPortions.filter(p => p.name.toLowerCase() !== portionName.toLowerCase());
+        if (!filtered.some(p => p.isDefault)) {
+          filtered[0].isDefault = true;
+        }
+        const def = filtered.find(p => p.isDefault) || filtered[0];
+        return {
+          ...item,
+          portions: filtered,
+          sellingPrice: def.price || item.sellingPrice,
+          b2bPrice: def.b2bPrice || item.b2bPrice
+        };
+      } else {
+        const newPortion: OnboardPortionOption = {
+          name: portionName,
+          price: item.sellingPrice || '',
+          b2bPrice: item.b2bPrice || '',
+          isDefault: currentPortions.length === 0
+        };
+        return {
+          ...item,
+          portions: [...currentPortions, newPortion]
+        };
+      }
+    }));
+  };
+
+  const addCustomPortionToItem = (itemId: string) => {
+    setMenuItems(menuItems.map(item => {
+      if (item.id !== itemId) return item;
+      const trimmed = (item.customPortionInput || '').trim();
+      if (!trimmed) return item;
+      const currentPortions = item.portions || [];
+      const exists = currentPortions.some(p => p.name.toLowerCase() === trimmed.toLowerCase());
+      if (exists) {
+        return { ...item, customPortionInput: '', showCustomPortionInput: false };
+      }
+      const newPortion: OnboardPortionOption = {
+        name: trimmed,
+        price: item.sellingPrice || '',
+        b2bPrice: item.b2bPrice || '',
+        isDefault: currentPortions.length === 0
+      };
+      return {
+        ...item,
+        portions: [...currentPortions, newPortion],
+        customPortionInput: '',
+        showCustomPortionInput: false
+      };
+    }));
+  };
+
+  const updateItemPortionField = (itemId: string, portionIndex: number, field: 'price' | 'b2bPrice', value: string) => {
+    setMenuItems(menuItems.map(item => {
+      if (item.id !== itemId) return item;
+      const updated = [...(item.portions || [])];
+      updated[portionIndex] = { ...updated[portionIndex], [field]: value };
+      const isDef = updated[portionIndex].isDefault;
+      return {
+        ...item,
+        portions: updated,
+        ...(isDef && field === 'price' ? { sellingPrice: value } : {}),
+        ...(isDef && field === 'b2bPrice' ? { b2bPrice: value } : {})
+      };
+    }));
+  };
+
+  const setItemDefaultPortion = (itemId: string, portionIndex: number) => {
+    setMenuItems(menuItems.map(item => {
+      if (item.id !== itemId) return item;
+      const updated = (item.portions || []).map((p, i) => ({
+        ...p,
+        isDefault: i === portionIndex
+      }));
+      const def = updated[portionIndex];
+      return {
+        ...item,
+        portions: updated,
+        sellingPrice: def.price || item.sellingPrice,
+        b2bPrice: def.b2bPrice || item.b2bPrice
+      };
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -170,17 +316,38 @@ const RestaurantOnboard = () => {
       const newRestaurantId = createRes.restaurant._id;
 
       for (const item of menuItems) {
-        if (!item.name || !item.sellingPrice) continue;
+        if (!item.name) continue;
         let itemImageUrl = '';
         if (item.image) itemImageUrl = await uploadFile(item.image as unknown as File);
+
+        const validPortions = (item.portions && item.portions.length > 0)
+          ? item.portions.map(p => ({
+              name: p.name,
+              price: Number(p.price) || 0,
+              b2bPrice: Number(p.b2bPrice) || 0,
+              isDefault: !!p.isDefault
+            }))
+          : [{
+              name: 'Full',
+              price: Number(item.sellingPrice) || 0,
+              b2bPrice: Number(item.b2bPrice) || 0,
+              isDefault: true
+            }];
+
+        const defPortion = validPortions.find(p => p.isDefault) || validPortions[0];
+        const primaryPrice = defPortion.price;
+        const primaryB2BPrice = defPortion.b2bPrice;
+        const primaryPortion = defPortion.name;
 
         await apiFetch(`/restaurants/admin/menu/add/${newRestaurantId}`, {
           method: 'POST',
           body: JSON.stringify({
             name: item.name,
             description: item.description,
-            price: Number(item.sellingPrice),
-            b2bPrice: Number(item.b2bPrice),
+            price: primaryPrice,
+            b2bPrice: primaryB2BPrice,
+            portion: primaryPortion,
+            portions: validPortions,
             foodType: item.isVeg ? 'veg' : 'non-veg',
             image: itemImageUrl,
           })
@@ -360,7 +527,7 @@ const RestaurantOnboard = () => {
             <h3 className="section-title">Documents</h3>
             <div className="documents-grid">
               <div className="document-upload">
-                <label>Restaurant Photo</label>
+                <label>Restaurant Photo (Logo/Cover)</label>
                 <div className="upload-dropzone" style={{ position: 'relative', overflow: 'hidden' }}>
                   {logoFile ? (
                     <img src={URL.createObjectURL(logoFile)} alt="Logo Preview" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
@@ -368,15 +535,35 @@ const RestaurantOnboard = () => {
                     <>
                       <Upload size={32} className="upload-icon" />
                       <p>Drag and drop image here</p>
-                      <span className="upload-hint">or click to browse files</span>
+                      <span className="upload-hint" style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Max size: 2 MB (Recommended &lt; 1 MB)</span>
+                      <span className="upload-hint" style={{ fontSize: '0.75rem', color: '#64748b' }}>Supported: JPG, PNG, WEBP</span>
                     </>
                   )}
-                  <input type="file" accept="image/*" className="file-input" style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} onChange={e => setLogoFile(e.target.files?.[0] || null)} />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="file-input"
+                    style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) {
+                        setLogoFile(null);
+                        return;
+                      }
+                      const validation = validateFile(file, { maxSizeMB: 2, recommendedSizeMB: 1, typeDescription: 'JPG, PNG, WEBP' });
+                      if (!validation.isValid) {
+                        alert(validation.error);
+                        e.target.value = '';
+                        return;
+                      }
+                      setLogoFile(file);
+                    }}
+                  />
                 </div>
               </div>
 
               <div className="document-upload">
-                <label>Operating License</label>
+                <label>Operating License / FSSAI Document</label>
                 <div className="upload-dropzone" style={{ position: 'relative', overflow: 'hidden' }}>
                   {licenseFile ? (
                     licenseFile.type.includes('image') ? (
@@ -391,10 +578,35 @@ const RestaurantOnboard = () => {
                     <>
                       <FileText size={32} className="upload-icon" />
                       <p>Drag and drop document here</p>
-                      <span className="upload-hint">PDF, JPG, or PNG</span>
+                      <span className="upload-hint" style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Max size: 5 MB</span>
+                      <span className="upload-hint" style={{ fontSize: '0.75rem', color: '#64748b' }}>Supported: PDF, JPG, PNG</span>
                     </>
                   )}
-                  <input type="file" accept=".pdf,image/*" className="file-input" style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} onChange={e => setLicenseFile(e.target.files?.[0] || null)} />
+                  <input
+                    type="file"
+                    accept=".pdf,image/*"
+                    className="file-input"
+                    style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) {
+                        setLicenseFile(null);
+                        return;
+                      }
+                      const validation = validateFile(file, {
+                        maxSizeMB: 5,
+                        recommendedSizeMB: 2,
+                        allowedTypes: ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'],
+                        typeDescription: 'PDF, JPG, PNG',
+                      });
+                      if (!validation.isValid) {
+                        alert(validation.error);
+                        e.target.value = '';
+                        return;
+                      }
+                      setLicenseFile(file);
+                    }}
+                  />
                 </div>
               </div>
             </div>
@@ -403,22 +615,40 @@ const RestaurantOnboard = () => {
           <div className="form-section">
             <h3 className="section-title">Initial Menu Items</h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '1.5rem', marginTop: '-1rem' }}>
-              Add items to the restaurant's menu. Provide both B2B and Selling prices.
+              Add items to the restaurant's menu. Max photo size: 2 MB (Recommended under 1 MB).
             </p>
 
             <div className="onboard-menu-items" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {menuItems.map((item) => (
-                <div key={item.id} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', gap: '1.5rem', alignItems: 'center', position: 'relative' }}>
-                  <div style={{ width: '80px', height: '80px', borderRadius: 'var(--radius-md)', border: '2px dashed var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
+                <div key={item.id} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', gap: '1.5rem', alignItems: 'flex-start', position: 'relative' }}>
+                  <div style={{ width: '80px', height: '80px', borderRadius: 'var(--radius-md)', border: '2px dashed var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', flexShrink: 0, marginTop: '0.5rem' }}>
                     {item.image ? (
                       <img src={URL.createObjectURL(item.image as unknown as File)} alt="Item Preview" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
                     ) : (
                       <>
                         <ImageIcon size={24} color="var(--text-secondary)" />
-                        <span style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>Image</span>
+                        <span style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>Max 2MB</span>
                       </>
                     )}
-                    <input type="file" accept="image/*" style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} onChange={(e) => updateMenuItem(item.id, 'image', (e.target.files?.[0] as unknown as string) || null)} />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) {
+                          updateMenuItem(item.id, 'image', null as any);
+                          return;
+                        }
+                        const validation = validateFile(file, { maxSizeMB: 2, recommendedSizeMB: 1, typeDescription: 'JPG, PNG, WEBP' });
+                        if (!validation.isValid) {
+                          alert(validation.error);
+                          e.target.value = '';
+                          return;
+                        }
+                        updateMenuItem(item.id, 'image', file as any);
+                      }}
+                    />
                   </div>
 
                   <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
@@ -457,31 +687,123 @@ const RestaurantOnboard = () => {
                       />
                     </div>
 
-                    <div className="form-group">
-                      <label>B2B Price (Cost)</label>
-                      <div className="input-with-icon">
-                        <Tag size={16} className="input-icon" />
-                        <input
-                          type="number"
-                          placeholder="0.00"
-                          value={item.b2bPrice}
-                          onChange={(e) => updateMenuItem(item.id, 'b2bPrice', e.target.value)}
-                          required
-                        />
+                    {/* ── MULTI-PORTION VARIANT SELECTOR ── */}
+                    <div style={{ gridColumn: 'span 3', background: '#F8FAFC', padding: '1rem', borderRadius: '12px', border: '1px solid #E2E8F0', marginTop: '0.25rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                        <label style={{ fontWeight: 600, color: '#0F172A', fontSize: '0.875rem' }}>Portions / Serving Sizes Available</label>
+                        <span style={{ fontSize: '0.75rem', color: '#2563EB', fontWeight: 600 }}>Click to toggle available portions</span>
                       </div>
-                    </div>
 
-                    <div className="form-group">
-                      <label>Selling Price (Retail)</label>
-                      <div className="input-with-icon">
-                        <Tag size={16} className="input-icon" />
-                        <input
-                          type="number"
-                          placeholder="0.00"
-                          value={item.sellingPrice}
-                          onChange={(e) => updateMenuItem(item.id, 'sellingPrice', e.target.value)}
-                          required
-                        />
+                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+                        {PRESET_PORTIONS.map(portionName => {
+                          const isSelected = (item.portions || []).some(p => p.name.toLowerCase() === portionName.toLowerCase());
+                          return (
+                            <button
+                              key={portionName}
+                              type="button"
+                              onClick={() => toggleItemPortion(item.id, portionName)}
+                              style={{
+                                padding: '0.35rem 0.75rem',
+                                borderRadius: '20px',
+                                border: isSelected ? '1.5px solid #2563EB' : '1px solid #CBD5E1',
+                                background: isSelected ? '#EFF6FF' : '#FFFFFF',
+                                color: isSelected ? '#1D4ED8' : '#475569',
+                                fontSize: '0.8rem',
+                                cursor: 'pointer',
+                                fontWeight: isSelected ? 600 : 500,
+                                transition: 'all 0.15s ease'
+                              }}
+                            >
+                              {isSelected ? '✓ ' : '+ '}{portionName}
+                            </button>
+                          );
+                        })}
+
+                        {!item.showCustomPortionInput ? (
+                          <button
+                            type="button"
+                            onClick={() => setMenuItems(menuItems.map(m => m.id === item.id ? { ...m, showCustomPortionInput: true } : m))}
+                            style={{ padding: '0.35rem 0.75rem', borderRadius: '20px', border: '1px dashed #94A3B8', background: '#FFFFFF', color: '#475569', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 500 }}
+                          >
+                            + Custom Portion
+                          </button>
+                        ) : (
+                          <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                            <input
+                              type="text"
+                              placeholder="e.g. 500ml, 4 Pcs"
+                              value={item.customPortionInput || ''}
+                              onChange={e => setMenuItems(menuItems.map(m => m.id === item.id ? { ...m, customPortionInput: e.target.value } : m))}
+                              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCustomPortionToItem(item.id); } }}
+                              style={{ padding: '0.3rem 0.5rem', fontSize: '0.8rem', background: '#FFFFFF', border: '1px solid #2563EB', borderRadius: '6px', color: '#0F172A', outline: 'none' }}
+                              autoFocus
+                            />
+                            <button type="button" onClick={() => addCustomPortionToItem(item.id)} style={{ padding: '0.3rem 0.55rem', background: '#2563EB', color: '#FFFFFF', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}>Add</button>
+                            <button type="button" onClick={() => setMenuItems(menuItems.map(m => m.id === item.id ? { ...m, showCustomPortionInput: false } : m))} style={{ padding: '0.3rem 0.4rem', background: 'transparent', color: '#64748B', border: 'none', cursor: 'pointer' }}>✕</button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Portions Pricing Table */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr 40px', gap: '0.75rem', fontSize: '0.75rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', padding: '0 0.5rem' }}>
+                          <span>Portion (Default)</span>
+                          <span>Selling Price (₹)</span>
+                          <span>B2B Cost (₹)</span>
+                          <span></span>
+                        </div>
+
+                        {(item.portions || []).map((p, idx) => (
+                          <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr 40px', gap: '0.75rem', alignItems: 'center', background: p.isDefault ? '#EFF6FF' : '#FFFFFF', padding: '0.45rem 0.6rem', borderRadius: '8px', border: p.isDefault ? '1px solid #BFDBFE' : '1px solid #E2E8F0' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                              <button
+                                type="button"
+                                onClick={() => setItemDefaultPortion(item.id, idx)}
+                                title={p.isDefault ? "Default portion for customers" : "Click to make default"}
+                                style={{
+                                  padding: '0.2rem 0.45rem',
+                                  borderRadius: '4px',
+                                  border: p.isDefault ? 'none' : '1px solid #E2E8F0',
+                                  background: p.isDefault ? '#2563EB' : '#F1F5F9',
+                                  color: p.isDefault ? 'white' : '#64748B',
+                                  fontSize: '0.68rem',
+                                  fontWeight: 700,
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                {p.isDefault ? 'DEFAULT' : 'SET DEF'}
+                              </button>
+                              <span style={{ fontWeight: 600, fontSize: '0.85rem', color: p.isDefault ? '#1D4ED8' : '#0F172A' }}>{p.name}</span>
+                            </div>
+
+                            <input
+                              required
+                              type="number"
+                              placeholder="Sell ₹"
+                              value={p.price}
+                              onChange={e => updateItemPortionField(item.id, idx, 'price', e.target.value)}
+                              style={{ padding: '0.45rem', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', color: '#0F172A', fontSize: '0.875rem', outline: 'none' }}
+                            />
+
+                            <input
+                              required
+                              type="number"
+                              placeholder="B2B ₹"
+                              value={p.b2bPrice}
+                              onChange={e => updateItemPortionField(item.id, idx, 'b2bPrice', e.target.value)}
+                              style={{ padding: '0.45rem', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', color: '#0F172A', fontSize: '0.875rem', outline: 'none' }}
+                            />
+
+                            <button
+                              type="button"
+                              onClick={() => toggleItemPortion(item.id, p.name)}
+                              style={{ background: 'transparent', border: 'none', color: '#EF4444', cursor: 'pointer', display: 'flex', justifyContent: 'center', padding: '4px' }}
+                              title="Remove portion"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>

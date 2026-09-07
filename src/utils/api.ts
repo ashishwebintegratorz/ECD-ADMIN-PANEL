@@ -36,7 +36,15 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     return data;
 };
 
-export const uploadFile = async (file: File) => {
+import { validateFile, type FileValidationOptions } from './fileValidation';
+
+export const uploadFile = async (file: File, options: FileValidationOptions = {}) => {
+    // 1. Client-side pre-upload validation
+    const validation = validateFile(file, options);
+    if (!validation.isValid) {
+        throw new Error(validation.error);
+    }
+
     const formData = new FormData();
     formData.append('image', file);
 

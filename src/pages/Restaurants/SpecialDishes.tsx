@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Plus, Trash2, Image as ImageIcon } from 'lucide-react';
 import { apiFetch } from '../../utils/api';
+import { validateFile } from '../../utils/fileValidation';
 import './SpecialDishes.css';
 
 interface SpecialDish {
@@ -49,8 +50,16 @@ const SpecialDishes = () => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
+    const file = e.target.files?.[0];
+    if (file) {
+      const validation = validateFile(file, { maxSizeMB: 2, recommendedSizeMB: 1, typeDescription: 'JPG, PNG, WEBP' });
+      if (!validation.isValid) {
+        alert(validation.error);
+        e.target.value = '';
+        setSelectedFile(null);
+        setPreviewUrl(null);
+        return;
+      }
       setSelectedFile(file);
       setPreviewUrl(URL.createObjectURL(file));
     }
@@ -259,6 +268,9 @@ const SpecialDishes = () => {
                       style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
                     />
                   </div>
+                  <span style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '6px', display: 'block', textAlign: 'center' }}>
+                    Max size: 2 MB (Recommended: under 1 MB for high speed) • JPG, PNG, WEBP
+                  </span>
                 </div>
               </div>
 

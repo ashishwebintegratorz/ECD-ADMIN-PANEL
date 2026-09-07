@@ -3,6 +3,13 @@ import { apiFetch } from '../../utils/api';
 import { CheckCircle, XCircle, Image as ImageIcon, Trash2, History, Clock } from 'lucide-react';
 import './MenuApprovals.css';
 
+interface PortionOption {
+  name: string;
+  price?: number | string;
+  b2bPrice?: number | string;
+  isDefault?: boolean;
+}
+
 interface PendingItem {
   restaurantId: string;
   restaurantName: string;
@@ -11,6 +18,8 @@ interface PendingItem {
   description: string;
   b2bPrice: number;
   price?: number;
+  portion?: string;
+  portions?: PortionOption[];
   image: string;
   foodType: string;
   approvalStatus: string;
@@ -23,7 +32,8 @@ const MenuApprovals = () => {
   const [pendingItems, setPendingItems] = useState<PendingItem[]>([]);
   const [pastItems, setPastItems] = useState<PendingItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [prices, setPrices] = useState<Record<string, string>>({}); // itemId -> price input
+  // Stores prices keyed by `${itemId}_${portionName}` or `${itemId}`
+  const [portionPrices, setPortionPrices] = useState<Record<string, string>>({});
 
   const fetchItems = async () => {
     try {
@@ -34,9 +44,16 @@ const MenuApprovals = () => {
           setPendingItems(res.pendingItems || []);
           const initialPrices: Record<string, string> = {};
           (res.pendingItems || []).forEach((item: PendingItem) => {
-            initialPrices[item._id] = item.b2bPrice ? item.b2bPrice.toString() : '';
+            if (item.portions && item.portions.length > 0) {
+              item.portions.forEach(p => {
+                const key = `${item._id}_${p.name}`;
+                initialPrices[key] = p.price ? p.price.toString() : '';
+              });
+            } else {
+              initialPrices[item._id] = item.b2bPrice ? item.b2bPrice.toString() : '';
+            }
           });
-          setPrices(initialPrices);
+          setPortionPrices(initialPrices);
         }
       } else {
         const res = await apiFetch('/restaurants/admin/menu/history');
@@ -55,23 +72,59 @@ const MenuApprovals = () => {
     fetchItems();
   }, [activeTab]);
 
-  const handlePriceChange = (id: string, value: string) => {
-    setPrices(prev => ({ ...prev, [id]: value }));
+  const handlePortionPriceChange = (itemId: string, portionName: string, value: string) => {
+    const key = `${itemId}_${portionName}`;
+    setPortionPrices(prev => ({ ...prev, [key]: value }));
   };
 
   const handleApproval = async (item: PendingItem, status: 'approved' | 'rejected' | 'deleted') => {
-    const sellingPrice = prices[item._id];
-    
-    if (status === 'approved' && item.approvalStatus !== 'delete_pending' && (!sellingPrice || isNaN(Number(sellingPrice)))) {
-      alert('Please enter a valid selling price to approve this item.');
-      return;
+    if (status === 'approved' && item.approvalStatus !== 'delete_pending') {
+      if (item.portions && item.portions.length > 0) {
+        for (const p of item.portions) {
+          const key = `${item._id}_${p.name}`;
+          const val = portionPrices[key];
+          if (!val || isNaN(Number(val)) || Number(val) <= 0) {
+            alert(`Please enter a valid selling price for portion: ${p.name}`);
+            return;
+          }
+        }
+      } else {
+        const val = portionPrices[item._id];
+        if (!val || isNaN(Number(val))) {
+          alert('Please enter a valid selling price to approve this item.');
+          return;
+        }
+      }
     }
 
     try {
-      const payload = {
+      let payloadPortions = undefined;
+      let primaryPrice = 0;
+
+      if (item.portions && item.portions.length > 0) {
+        payloadPortions = item.portions.map(p => {
+          const key = `${item._id}_${p.name}`;
+          const priceVal = Number(portionPrices[key]) || 0;
+          return {
+            name: p.name,
+            b2bPrice: Number(p.b2bPrice) || 0,
+            price: status === 'approved' ? priceVal : 0,
+            isDefault: !!p.isDefault
+          };
+        });
+        const def = payloadPortions.find(p => p.isDefault) || payloadPortions[0];
+        primaryPrice = def.price;
+      } else {
+        primaryPrice = status === 'approved' ? (Number(portionPrices[item._id]) || 0) : 0;
+      }
+
+      const payload: any = {
         approvalStatus: status,
-        price: status === 'approved' ? Number(sellingPrice) : 0
+        price: primaryPrice
       };
+      if (payloadPortions) {
+        payload.portions = payloadPortions;
+      }
 
       const res = await apiFetch(`/restaurants/admin/menu/approve/${item.restaurantId}/${item._id}`, {
         method: 'PATCH',
@@ -99,7 +152,7 @@ const MenuApprovals = () => {
       <div className="page-header">
         <div>
           <h1 className="page-title">Menu Approvals</h1>
-          <p className="page-subtitle">Review menu additions and deletion requests</p>
+          <p className="page-subtitle">Review menu additions, portion pricing & deletion requests</p>
         </div>
         <div className="header-tabs" style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
           <button 
@@ -135,7 +188,9 @@ const MenuApprovals = () => {
               <div key={item._id} className={`approval-card glass-panel ${item.approvalStatus === 'delete_pending' ? 'danger-border' : ''}`} style={item.approvalStatus === 'delete_pending' ? { border: '2px solid #ef4444' } : {}}>
                 <div className="approval-card-header">
                   <span className="restaurant-badge">{item.restaurantName}</span>
-                  <span className={`food-type-badge ${item.foodType}`}>{item.foodType.toUpperCase()}</span>
+                  <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                    <span className={`food-type-badge ${item.foodType}`}>{item.foodType.toUpperCase()}</span>
+                  </div>
                 </div>
                 
                 {item.approvalStatus === 'delete_pending' && (
@@ -156,15 +211,62 @@ const MenuApprovals = () => {
                     )}
                   </div>
                   
-                  <div className="item-details">
+                  <div className="item-details" style={{ flex: 1 }}>
                     <h3 className="item-title">{item.name}</h3>
                     <p className="item-desc">{item.description || 'No description provided'}</p>
                     
-                    <div className="price-info">
-                      <div className="b2b-price">
-                        <span>B2B Price:</span>
-                        <strong>₹{item.b2bPrice || (item as any).price || 0}</strong>
-                      </div>
+                    {/* Multi-Portion B2B & Price Inputs */}
+                    <div style={{ marginTop: '0.75rem', background: 'rgba(255,255,255,0.03)', padding: '0.6rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: '0.4rem' }}>
+                        Portion Variants & Pricing
+                      </span>
+                      
+                      {item.portions && item.portions.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                          {item.portions.map((p, pIdx) => {
+                            const key = `${item._id}_${p.name}`;
+                            return (
+                              <div key={pIdx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                                <div style={{ flex: 1 }}>
+                                  <strong>{p.name}{p.isDefault ? ' (Def)' : ''}</strong>
+                                  <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>B2B: ₹{p.b2bPrice}</div>
+                                </div>
+                                {item.approvalStatus !== 'delete_pending' && (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                    <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>Sell ₹</span>
+                                    <input
+                                      type="number"
+                                      value={portionPrices[key] ?? ''}
+                                      onChange={e => handlePortionPriceChange(item._id, p.name, e.target.value)}
+                                      placeholder="Sell ₹"
+                                      style={{ width: '80px', padding: '0.3rem 0.5rem', borderRadius: '6px', border: '1px solid #4b5563', background: '#1f2937', color: 'white', fontSize: '0.85rem' }}
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div>
+                            <span style={{ fontSize: '0.85rem', color: '#9ca3af' }}>B2B Price: </span>
+                            <strong>₹{item.b2bPrice || 0}</strong>
+                          </div>
+                          {item.approvalStatus !== 'delete_pending' && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                              <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>Sell ₹</span>
+                              <input
+                                type="number"
+                                value={portionPrices[item._id] ?? ''}
+                                onChange={e => setPortionPrices(prev => ({ ...prev, [item._id]: e.target.value }))}
+                                placeholder="Sell ₹"
+                                style={{ width: '80px', padding: '0.3rem 0.5rem', borderRadius: '6px', border: '1px solid #4b5563', background: '#1f2937', color: 'white', fontSize: '0.85rem' }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -174,7 +276,7 @@ const MenuApprovals = () => {
                     <div className="action-buttons full-width" style={{ width: '100%', display: 'flex', gap: '0.5rem' }}>
                       <button 
                         className="btn btn-secondary"
-                        onClick={() => handleApproval(item, 'approved')} // reject deletion means return to approved
+                        onClick={() => handleApproval(item, 'approved')}
                         style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: '#f3f4f6', color: '#374151', padding: '0.75rem', borderRadius: '8px', border: 'none', cursor: 'pointer' }}
                       >
                         <XCircle size={18} />
@@ -182,7 +284,7 @@ const MenuApprovals = () => {
                       </button>
                       <button 
                         className="btn btn-reject"
-                        onClick={() => handleApproval(item, 'deleted')} // approve deletion means permanently delete
+                        onClick={() => handleApproval(item, 'deleted')}
                         style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: '#ef4444', color: 'white', padding: '0.75rem', borderRadius: '8px', border: 'none', cursor: 'pointer' }}
                       >
                         <CheckCircle size={18} />
@@ -190,34 +292,24 @@ const MenuApprovals = () => {
                       </button>
                     </div>
                   ) : (
-                    <>
-                      <div className="selling-price-input">
-                        <label>Set Selling Price (₹)</label>
-                        <input 
-                          type="number" 
-                          value={prices[item._id] || ''} 
-                          onChange={(e) => handlePriceChange(item._id, e.target.value)}
-                          placeholder="e.g. 150"
-                        />
-                      </div>
-                      
-                      <div className="action-buttons">
-                        <button 
-                          className="btn btn-reject"
-                          onClick={() => handleApproval(item, 'rejected')}
-                        >
-                          <XCircle size={18} />
-                          Reject
-                        </button>
-                        <button 
-                          className="btn btn-approve"
-                          onClick={() => handleApproval(item, 'approved')}
-                        >
-                          <CheckCircle size={18} />
-                          Approve
-                        </button>
-                      </div>
-                    </>
+                    <div className="action-buttons" style={{ width: '100%', display: 'flex', gap: '0.75rem' }}>
+                      <button 
+                        className="btn btn-reject"
+                        onClick={() => handleApproval(item, 'rejected')}
+                        style={{ flex: 1 }}
+                      >
+                        <XCircle size={18} />
+                        Reject
+                      </button>
+                      <button 
+                        className="btn btn-approve"
+                        onClick={() => handleApproval(item, 'approved')}
+                        style={{ flex: 1 }}
+                      >
+                        <CheckCircle size={18} />
+                        Approve
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -237,7 +329,7 @@ const MenuApprovals = () => {
               <div key={item._id} className="approval-card glass-panel read-only-card">
                 <div className="approval-card-header">
                   <span className="restaurant-badge">{item.restaurantName}</span>
-                  <div className="badges-right">
+                  <div className="badges-right" style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
                     <span className={`status-badge ${item.approvalStatus}`} style={{ padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold', background: item.approvalStatus === 'approved' ? '#dcfce7' : item.approvalStatus === 'deleted' ? '#f3f4f6' : '#fee2e2', color: item.approvalStatus === 'approved' ? '#166534' : item.approvalStatus === 'deleted' ? '#4b5563' : '#991b1b' }}>
                       {item.approvalStatus.toUpperCase()}
                     </span>
@@ -262,19 +354,32 @@ const MenuApprovals = () => {
                     )}
                   </div>
                   
-                  <div className="item-details">
+                  <div className="item-details" style={{ flex: 1 }}>
                     <h3 className="item-title">{item.name}</h3>
                     <p className="item-desc">{item.description || 'No description provided'}</p>
                     
-                    <div className="price-info split" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <div className="b2b-price">
-                        <span style={{ fontSize: '0.85rem', color: '#6b7280', display: 'block' }}>B2B Price:</span>
-                        <strong>₹{item.b2bPrice}</strong>
-                      </div>
-                      {item.approvalStatus === 'approved' && item.price && (
-                        <div className="selling-price" style={{ textAlign: 'right' }}>
-                          <span style={{ fontSize: '0.85rem', color: '#6b7280', display: 'block' }}>Selling Price:</span>
-                          <strong style={{ color: '#059669' }}>₹{item.price}</strong>
+                    <div style={{ marginTop: '0.5rem' }}>
+                      {item.portions && item.portions.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.8rem' }}>
+                          {item.portions.map((p, pi) => (
+                            <div key={pi} style={{ display: 'flex', justifyContent: 'space-between', background: 'rgba(255,255,255,0.03)', padding: '0.3rem 0.5rem', borderRadius: '4px' }}>
+                              <span><strong>{p.name}:</strong> B2B ₹{p.b2bPrice}</span>
+                              {p.price && <strong style={{ color: '#059669' }}>Sell ₹{p.price}</strong>}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="price-info split" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <div className="b2b-price">
+                            <span style={{ fontSize: '0.85rem', color: '#6b7280', display: 'block' }}>B2B Price:</span>
+                            <strong>₹{item.b2bPrice}</strong>
+                          </div>
+                          {item.approvalStatus === 'approved' && item.price && (
+                            <div className="selling-price" style={{ textAlign: 'right' }}>
+                              <span style={{ fontSize: '0.85rem', color: '#6b7280', display: 'block' }}>Selling Price:</span>
+                              <strong style={{ color: '#059669' }}>₹{item.price}</strong>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

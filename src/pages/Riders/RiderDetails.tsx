@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { apiFetch, uploadFile } from '../../utils/api';
+import { validateFile } from '../../utils/fileValidation';
 import './RiderDetails.css';
 
 interface Rider {
@@ -107,9 +108,22 @@ const RiderDetails = () => {
 
   const handleDocumentUpload = async (docType: 'aadharFront' | 'aadharBack' | 'license', file: File) => {
     if (!selectedRider) return;
+
+    const validation = validateFile(file, {
+      maxSizeMB: 5,
+      recommendedSizeMB: 2,
+      allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
+      typeDescription: 'PDF, JPG, PNG, WEBP',
+    });
+
+    if (!validation.isValid) {
+      alert(validation.error);
+      return;
+    }
+
     setIsUpdating(true);
     try {
-      const url = await uploadFile(file);
+      const url = await uploadFile(file, { maxSizeMB: 5, recommendedSizeMB: 2 });
       const updatedDocs = {
         ...selectedRider.documents,
         [docType]: url,
@@ -132,9 +146,22 @@ const RiderDetails = () => {
 
   const handleAvatarUpload = async (file: File) => {
     if (!selectedRider) return;
+
+    const validation = validateFile(file, {
+      maxSizeMB: 2,
+      recommendedSizeMB: 1,
+      allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
+      typeDescription: 'JPG, PNG, WEBP',
+    });
+
+    if (!validation.isValid) {
+      alert(validation.error);
+      return;
+    }
+
     setIsUpdating(true);
     try {
-      const url = await uploadFile(file);
+      const url = await uploadFile(file, { maxSizeMB: 2, recommendedSizeMB: 1 });
       const data = await apiFetch(`/admin/users/${selectedRider._id}/details`, {
         method: 'PATCH',
         body: JSON.stringify({ avatar: url }),
@@ -277,6 +304,7 @@ const RiderDetails = () => {
                         disabled={isUpdating}
                       />
                     </label>
+                    <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', display: 'block', marginTop: '4px' }}>Max: 2MB (Rec &lt;1MB)</span>
                   </div>
 
                   {/* Aadhar Front */}
@@ -295,12 +323,13 @@ const RiderDetails = () => {
                       {isUpdating ? 'Uploading...' : 'Edit Image'}
                       <input 
                         type="file" 
-                        accept="image/*" 
+                        accept="image/*,application/pdf" 
                         hidden 
                         onChange={(e) => e.target.files?.[0] && handleDocumentUpload('aadharFront', e.target.files[0])}
                         disabled={isUpdating}
                       />
                     </label>
+                    <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', display: 'block', marginTop: '4px' }}>Max: 5MB (PDF/Image)</span>
                   </div>
 
                   {/* Aadhar Back */}
@@ -319,12 +348,13 @@ const RiderDetails = () => {
                       {isUpdating ? 'Uploading...' : 'Edit Image'}
                       <input 
                         type="file" 
-                        accept="image/*" 
+                        accept="image/*,application/pdf" 
                         hidden 
                         onChange={(e) => e.target.files?.[0] && handleDocumentUpload('aadharBack', e.target.files[0])}
                         disabled={isUpdating}
                       />
                     </label>
+                    <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', display: 'block', marginTop: '4px' }}>Max: 5MB (PDF/Image)</span>
                   </div>
 
                   {/* License */}
@@ -343,12 +373,13 @@ const RiderDetails = () => {
                       {isUpdating ? 'Uploading...' : 'Edit Image'}
                       <input 
                         type="file" 
-                        accept="image/*" 
+                        accept="image/*,application/pdf" 
                         hidden 
                         onChange={(e) => e.target.files?.[0] && handleDocumentUpload('license', e.target.files[0])}
                         disabled={isUpdating}
                       />
                     </label>
+                    <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', display: 'block', marginTop: '4px' }}>Max: 5MB (PDF/Image)</span>
                   </div>
                 </div>
               </div>
