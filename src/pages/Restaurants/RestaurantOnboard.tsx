@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
-import { Upload, FileText, Store, Phone, CheckCircle2, Hash, KeyRound, Plus, Image as ImageIcon, Trash2, Tag, MapPin } from 'lucide-react';
+import { Upload, FileText, Store, Phone, CheckCircle2, Hash, KeyRound, Plus, Image as ImageIcon, Trash2, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLoadScript } from '@react-google-maps/api';
 import './RestaurantOnboard.css';
