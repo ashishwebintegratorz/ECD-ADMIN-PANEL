@@ -123,6 +123,7 @@ const RestaurantOnboard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, inputRef]);
 
+  const PRESET_CATEGORIES = ['Starters', 'Main Course', 'Breads', 'Rice & Biryani', 'Desserts', 'Beverages', 'Snacks', 'Combos', 'Pizza', 'Burgers', 'Chinese', 'South Indian'];
   const PRESET_PORTIONS = ['Full', 'Half', 'Quarter', '1 Pc', '2 Pcs', 'Small', 'Medium', 'Large'];
 
   interface OnboardPortionOption {
@@ -135,23 +136,29 @@ const RestaurantOnboard = () => {
   interface OnboardMenuItem {
     id: string;
     name: string;
+    category?: string;
     b2bPrice: string;
     sellingPrice: string;
     image: File | null;
+    foodType?: 'veg' | 'non-veg' | 'vegan';
     isVeg: boolean;
     description: string;
     portions: OnboardPortionOption[];
     showCustomPortionInput?: boolean;
     customPortionInput?: string;
+    showCustomCategoryInput?: boolean;
+    customCategoryInput?: string;
   }
 
   const [menuItems, setMenuItems] = useState<OnboardMenuItem[]>([
     {
       id: 'item-1',
       name: '',
+      category: 'Main Course',
       b2bPrice: '',
       sellingPrice: '',
       image: null,
+      foodType: 'veg',
       isVeg: true,
       description: '',
       portions: [
@@ -159,6 +166,8 @@ const RestaurantOnboard = () => {
       ],
       showCustomPortionInput: false,
       customPortionInput: '',
+      showCustomCategoryInput: false,
+      customCategoryInput: '',
     }
   ]);
 
@@ -168,9 +177,11 @@ const RestaurantOnboard = () => {
       {
         id: `item-${Date.now()}`,
         name: '',
+        category: 'Main Course',
         b2bPrice: '',
         sellingPrice: '',
         image: null,
+        foodType: 'veg',
         isVeg: true,
         description: '',
         portions: [
@@ -178,12 +189,32 @@ const RestaurantOnboard = () => {
         ],
         showCustomPortionInput: false,
         customPortionInput: '',
+        showCustomCategoryInput: false,
+        customCategoryInput: '',
       }
     ]);
   };
 
   const updateMenuItem = (id: string, field: string, value: string | boolean | null) => {
     setMenuItems(menuItems.map(item => item.id === id ? { ...item, [field]: value } : item));
+  };
+
+  const handleCategorySelect = (itemId: string, cat: string) => {
+    setMenuItems(menuItems.map(item => item.id === itemId ? { ...item, category: cat } : item));
+  };
+
+  const addCustomCategoryToItem = (itemId: string) => {
+    setMenuItems(menuItems.map(item => {
+      if (item.id !== itemId) return item;
+      const trimmed = (item.customCategoryInput || '').trim();
+      if (!trimmed) return item;
+      return {
+        ...item,
+        category: trimmed,
+        customCategoryInput: '',
+        showCustomCategoryInput: false,
+      };
+    }));
   };
 
   const removeMenuItem = (id: string) => {
@@ -318,7 +349,13 @@ const RestaurantOnboard = () => {
       for (const item of menuItems) {
         if (!item.name) continue;
         let itemImageUrl = '';
-        if (item.image) itemImageUrl = await uploadFile(item.image as unknown as File);
+        if (item.image) {
+          try {
+            itemImageUrl = await uploadFile(item.image as unknown as File, { maxSizeMB: 2, recommendedSizeMB: 1 });
+          } catch (imgErr) {
+            console.error("Failed to upload menu item image:", imgErr);
+          }
+        }
 
         const validPortions = (item.portions && item.portions.length > 0)
           ? item.portions.map(p => ({
@@ -344,12 +381,14 @@ const RestaurantOnboard = () => {
           body: JSON.stringify({
             name: item.name,
             description: item.description,
+            category: item.category || 'Main Course',
             price: primaryPrice,
             b2bPrice: primaryB2BPrice,
             portion: primaryPortion,
             portions: validPortions,
-            foodType: item.isVeg ? 'veg' : 'non-veg',
+            foodType: item.foodType || (item.isVeg ? 'veg' : 'non-veg'),
             image: itemImageUrl,
+            isAvailable: true,
           })
         });
       }
@@ -667,13 +706,75 @@ const RestaurantOnboard = () => {
                     <div className="form-group">
                       <label>Type</label>
                       <select
-                        value={item.isVeg ? 'veg' : 'non-veg'}
-                        onChange={(e) => updateMenuItem(item.id, 'isVeg', e.target.value === 'veg')}
+                        value={item.foodType || (item.isVeg ? 'veg' : 'non-veg')}
+                        onChange={(e) => {
+                          const val = e.target.value as 'veg' | 'non-veg' | 'vegan';
+                          setMenuItems(menuItems.map(m => m.id === item.id ? { ...m, foodType: val, isVeg: val === 'veg' } : m));
+                        }}
                         style={{ width: '100%', padding: '0.75rem 1rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-md)', color: 'var(--text-primary)', outline: 'none', appearance: 'auto' }}
                       >
                         <option value="veg" style={{ background: 'var(--bg-secondary)' }}>Vegetarian</option>
                         <option value="non-veg" style={{ background: 'var(--bg-secondary)' }}>Non-Vegetarian</option>
+                        <option value="vegan" style={{ background: 'var(--bg-secondary)' }}>Vegan</option>
                       </select>
+                    </div>
+
+                    {/* Category Selector */}
+                    <div className="form-group" style={{ gridColumn: 'span 3', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <label style={{ fontWeight: 600, fontSize: '0.875rem' }}>Category</label>
+                        {item.category && (
+                          <span style={{ fontSize: '0.8rem', color: '#2563EB', fontWeight: 600 }}>Selected: {item.category}</span>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginTop: '0.2rem' }}>
+                        {PRESET_CATEGORIES.map(cat => {
+                          const isSelected = (item.category || 'Main Course').toLowerCase() === cat.toLowerCase();
+                          return (
+                            <button
+                              key={cat}
+                              type="button"
+                              onClick={() => handleCategorySelect(item.id, cat)}
+                              style={{
+                                padding: '0.35rem 0.75rem',
+                                borderRadius: '20px',
+                                border: isSelected ? '1.5px solid #2563EB' : '1px solid #CBD5E1',
+                                background: isSelected ? '#EFF6FF' : '#FFFFFF',
+                                color: isSelected ? '#1D4ED8' : '#475569',
+                                fontSize: '0.82rem',
+                                cursor: 'pointer',
+                                fontWeight: isSelected ? 600 : 500,
+                                transition: 'all 0.15s ease'
+                              }}
+                            >
+                              {isSelected ? '✓ ' : ''}{cat}
+                            </button>
+                          );
+                        })}
+                        {!item.showCustomCategoryInput ? (
+                          <button
+                            type="button"
+                            onClick={() => setMenuItems(menuItems.map(m => m.id === item.id ? { ...m, showCustomCategoryInput: true } : m))}
+                            style={{ padding: '0.35rem 0.75rem', borderRadius: '20px', border: '1px dashed #94A3B8', background: '#FFFFFF', color: '#475569', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 500 }}
+                          >
+                            + Custom Category
+                          </button>
+                        ) : (
+                          <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                            <input
+                              type="text"
+                              placeholder="e.g. Pasta, Tandoori"
+                              value={item.customCategoryInput || ''}
+                              onChange={e => setMenuItems(menuItems.map(m => m.id === item.id ? { ...m, customCategoryInput: e.target.value } : m))}
+                              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCustomCategoryToItem(item.id); } }}
+                              style={{ padding: '0.35rem 0.6rem', fontSize: '0.85rem', background: '#FFFFFF', border: '1px solid #2563EB', borderRadius: '6px', color: '#0F172A', outline: 'none' }}
+                              autoFocus
+                            />
+                            <button type="button" onClick={() => addCustomCategoryToItem(item.id)} style={{ padding: '0.35rem 0.6rem', background: '#2563EB', color: '#FFFFFF', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>Set</button>
+                            <button type="button" onClick={() => setMenuItems(menuItems.map(m => m.id === item.id ? { ...m, showCustomCategoryInput: false } : m))} style={{ padding: '0.35rem 0.5rem', background: 'transparent', color: '#64748B', border: 'none', cursor: 'pointer' }}>✕</button>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div className="form-group" style={{ gridColumn: 'span 3' }}>

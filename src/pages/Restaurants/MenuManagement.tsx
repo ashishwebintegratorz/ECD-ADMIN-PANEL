@@ -17,6 +17,7 @@ interface MenuItem {
   _id?: string;
   name: string;
   description: string;
+  category?: string;
   price: number | string;
   b2bPrice: number | string;
   portion?: string;
@@ -27,12 +28,26 @@ interface MenuItem {
 }
 
 const PRESET_PORTIONS = ['Full', 'Half', 'Quarter', '1 Pc', '2 Pcs', 'Small', 'Medium', 'Large'];
+const PRESET_CATEGORIES = [
+  'Pizza',
+  'Burgers',
+  'Starters',
+  'Main Course',
+  'Biryani',
+  'Chinese',
+  'Rolls & Wraps',
+  'Desserts',
+  'Beverages',
+  'Snacks',
+  'Combos'
+];
 
 const MenuManagement = () => {
   const { id } = useParams<{ id: string }>();
   const [selectedRestId, setSelectedRestId] = useState<string>(id || '');
   const [restaurants, setRestaurants] = useState<any[]>([]);
   const [menu, setMenu] = useState<MenuItem[]>([]);
+  const [selectedFilterCategory, setSelectedFilterCategory] = useState<string>('All');
   const [loading, setLoading] = useState(false);
   
   // Modal states
@@ -41,6 +56,7 @@ const MenuManagement = () => {
   const [formData, setFormData] = useState<MenuItem>({
     name: '',
     description: '',
+    category: 'Main Course',
     price: '',
     b2bPrice: '',
     portion: 'Full',
@@ -49,6 +65,8 @@ const MenuManagement = () => {
     foodType: 'veg',
     isAvailable: true
   });
+  const [customCategoryInput, setCustomCategoryInput] = useState('');
+  const [showCustomCategoryInput, setShowCustomCategoryInput] = useState(false);
   const [customPortionInput, setCustomPortionInput] = useState('');
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -124,6 +142,7 @@ const MenuManagement = () => {
     setFormData({
       name: '',
       description: '',
+      category: 'Main Course',
       price: '',
       b2bPrice: '',
       portion: 'Full',
@@ -132,6 +151,8 @@ const MenuManagement = () => {
       foodType: 'veg',
       isAvailable: true
     });
+    setCustomCategoryInput('');
+    setShowCustomCategoryInput(false);
     setCustomPortionInput('');
     setShowCustomInput(false);
     setShowModal(true);
@@ -163,12 +184,28 @@ const MenuManagement = () => {
 
     setFormData({
       ...item,
+      category: item.category || 'Main Course',
       portion: item.portion || itemPortions.find(p => p.isDefault)?.name || 'Full',
       portions: itemPortions
     });
+    setCustomCategoryInput('');
+    setShowCustomCategoryInput(false);
     setCustomPortionInput('');
     setShowCustomInput(false);
     setShowModal(true);
+  };
+
+  const handleCategorySelect = (cat: string) => {
+    setFormData(prev => ({ ...prev, category: cat }));
+    setShowCustomCategoryInput(false);
+  };
+
+  const addCustomCategory = () => {
+    const trimmed = customCategoryInput.trim();
+    if (!trimmed) return;
+    setFormData(prev => ({ ...prev, category: trimmed }));
+    setCustomCategoryInput('');
+    setShowCustomCategoryInput(false);
   };
 
   const togglePortion = (portionName: string) => {
@@ -305,6 +342,13 @@ const MenuManagement = () => {
     }
   };
 
+  const availableCategories = Array.from(
+    new Set(['All', ...PRESET_CATEGORIES, ...menu.map(m => m.category).filter(Boolean) as string[]])
+  );
+  const filteredMenu = selectedFilterCategory === 'All' 
+    ? menu 
+    : menu.filter(m => (m.category || 'Main Course').toLowerCase() === selectedFilterCategory.toLowerCase());
+
   return (
     <div className="menu-management">
       <div className="page-header">
@@ -332,16 +376,51 @@ const MenuManagement = () => {
         </div>
       </div>
 
+      {/* Category Filter Chips */}
+      {menu.length > 0 && (
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+          {availableCategories.map(cat => {
+            const isSelected = selectedFilterCategory.toLowerCase() === cat.toLowerCase();
+            const count = cat === 'All' ? menu.length : menu.filter(m => (m.category || 'Main Course').toLowerCase() === cat.toLowerCase()).length;
+            if (cat !== 'All' && count === 0) return null;
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setSelectedFilterCategory(cat)}
+                style={{
+                  padding: '0.4rem 0.85rem',
+                  borderRadius: '20px',
+                  border: isSelected ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)',
+                  background: isSelected ? 'var(--accent-primary)' : 'rgba(255,255,255,0.05)',
+                  color: isSelected ? '#FFFFFF' : 'var(--text-secondary)',
+                  fontSize: '0.85rem',
+                  fontWeight: isSelected ? 700 : 500,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <span>{cat}</span>
+                <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>({count})</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       <div className="menu-content">
         {loading ? (
           <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Loading menu...</div>
-        ) : menu.length === 0 ? (
+        ) : filteredMenu.length === 0 ? (
           <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-            No menu items found for this restaurant. Click 'Add Item' to create one.
+            No menu items found for this category. Click 'Add Item' to create one.
           </div>
         ) : (
           <div className="items-list" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {menu.map((item, idx) => (
+            {filteredMenu.map((item, idx) => (
               <div key={item._id || idx} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1.5rem' }}>
                 <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flex: 1 }}>
                   <div style={{ width: '85px', height: '85px', borderRadius: 'var(--radius-md)', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
@@ -354,6 +433,9 @@ const MenuManagement = () => {
                   <div>
                     <h3 style={{ fontSize: '1.1rem', marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                       {item.name}
+                      <span style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem', borderRadius: '4px', background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', fontWeight: 600 }}>
+                        {item.category || 'Main Course'}
+                      </span>
                       <span style={{ fontSize: '0.7rem', padding: '0.1rem 0.4rem', borderRadius: '4px', background: item.foodType === 'veg' ? 'rgba(16, 185, 129, 0.1)' : item.foodType === 'non-veg' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(139, 92, 246, 0.1)', color: item.foodType === 'veg' ? '#10b981' : item.foodType === 'non-veg' ? '#ef4444' : '#8b5cf6', textTransform: 'uppercase' }}>
                         {item.foodType}
                       </span>
@@ -408,6 +490,64 @@ const MenuManagement = () => {
               <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                 <label style={{ fontSize: '0.9rem', fontWeight: 600, color: '#334155' }}>Item Name</label>
                 <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Chicken Biryani, Butter Naan" style={{ width: '100%', padding: '0.75rem', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', color: '#0F172A', fontSize: '0.95rem', outline: 'none' }} />
+              </div>
+
+              {/* Category Selector */}
+              <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <label style={{ fontSize: '0.9rem', fontWeight: 600, color: '#334155' }}>Category</label>
+                  {formData.category && (
+                    <span style={{ fontSize: '0.8rem', color: '#2563EB', fontWeight: 600 }}>Selected: {formData.category}</span>
+                  )}
+                </div>
+                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginTop: '0.2rem' }}>
+                  {PRESET_CATEGORIES.map(cat => {
+                    const isSelected = (formData.category || '').toLowerCase() === cat.toLowerCase();
+                    return (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => handleCategorySelect(cat)}
+                        style={{
+                          padding: '0.35rem 0.75rem',
+                          borderRadius: '20px',
+                          border: isSelected ? '1.5px solid #2563EB' : '1px solid #CBD5E1',
+                          background: isSelected ? '#EFF6FF' : '#FFFFFF',
+                          color: isSelected ? '#1D4ED8' : '#475569',
+                          fontSize: '0.82rem',
+                          cursor: 'pointer',
+                          fontWeight: isSelected ? 600 : 500,
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        {isSelected ? '✓ ' : ''}{cat}
+                      </button>
+                    );
+                  })}
+                  {!showCustomCategoryInput ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowCustomCategoryInput(true)}
+                      style={{ padding: '0.35rem 0.75rem', borderRadius: '20px', border: '1px dashed #94A3B8', background: '#FFFFFF', color: '#475569', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 500 }}
+                    >
+                      + Custom Category
+                    </button>
+                  ) : (
+                    <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                      <input
+                        type="text"
+                        placeholder="e.g. Pasta, Tandoori"
+                        value={customCategoryInput}
+                        onChange={e => setCustomCategoryInput(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCustomCategory(); } }}
+                        style={{ padding: '0.35rem 0.6rem', fontSize: '0.85rem', background: '#FFFFFF', border: '1px solid #2563EB', borderRadius: '6px', color: '#0F172A', outline: 'none' }}
+                        autoFocus
+                      />
+                      <button type="button" onClick={addCustomCategory} style={{ padding: '0.35rem 0.6rem', background: '#2563EB', color: '#FFFFFF', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>Set</button>
+                      <button type="button" onClick={() => setShowCustomCategoryInput(false)} style={{ padding: '0.35rem 0.5rem', background: 'transparent', color: '#64748B', border: 'none', cursor: 'pointer' }}>✕</button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>

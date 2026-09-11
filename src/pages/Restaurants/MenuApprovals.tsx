@@ -16,6 +16,7 @@ interface PendingItem {
   _id: string;
   name: string;
   description: string;
+  category?: string;
   b2bPrice: number;
   price?: number;
   portion?: string;
@@ -189,6 +190,11 @@ const MenuApprovals = () => {
                 <div className="approval-card-header">
                   <span className="restaurant-badge">{item.restaurantName}</span>
                   <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                    {item.category && (
+                      <span style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem', borderRadius: '4px', background: '#dbeafe', color: '#1d4ed8', fontWeight: 600 }}>
+                        {item.category}
+                      </span>
+                    )}
                     <span className={`food-type-badge ${item.foodType}`}>{item.foodType.toUpperCase()}</span>
                   </div>
                 </div>
