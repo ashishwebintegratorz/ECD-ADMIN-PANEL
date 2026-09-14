@@ -104,6 +104,11 @@
   transform: scale(1.1);
 }
 
+.btn-icon.edit:hover {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
 .btn-icon.delete:hover {
   background: #ef4444;
   border-color: #ef4444;

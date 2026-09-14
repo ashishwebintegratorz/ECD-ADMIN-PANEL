@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, Trash2, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trash2, Edit2, Image as ImageIcon } from 'lucide-react';
 import { apiFetch } from '../../utils/api';
 import { validateFile } from '../../utils/fileValidation';
 import './SpecialDishes.css';
@@ -15,13 +15,32 @@ interface SpecialDish {
   ordering: number;
 }
 
+const DEFAULT_CATEGORIES = [
+  'Main Course',
+  'Starter',
+  'Biryani',
+  'Pizza',
+  'Burger',
+  'Chinese',
+  'North Indian',
+  'South Indian',
+  'Fast Food',
+  'Desserts',
+  'Beverages',
+  'Tandoori & Grill',
+  'Rolls & Wraps',
+  'Snacks'
+];
+
 const SpecialDishes = () => {
   const [dishes, setDishes] = useState<SpecialDish[]>([]);
+  const [apiCategories, setApiCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingDish, setEditingDish] = useState<SpecialDish | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
 
@@ -34,6 +53,7 @@ const SpecialDishes = () => {
 
   useEffect(() => {
     fetchDishes();
+    fetchCategories();
   }, []);
 
   const fetchDishes = async () => {
@@ -49,6 +69,29 @@ const SpecialDishes = () => {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const res = await apiFetch('/categories');
+      if (res && res.categories && Array.isArray(res.categories)) {
+        const catNames = res.categories
+          .map((c: any) => (typeof c === 'string' ? c : c.name))
+          .filter(Boolean);
+        setApiCategories(catNames);
+      }
+    } catch {
+      // Fallback silently if categories endpoint is optional
+    }
+  };
+
+  // Combine and deduplicate categories
+  const allAvailableCategories = Array.from(
+    new Set([
+      ...DEFAULT_CATEGORIES,
+      ...apiCategories,
+      ...dishes.map(d => d.category).filter(Boolean) as string[]
+    ])
+  ).sort();
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -57,7 +100,7 @@ const SpecialDishes = () => {
         alert(validation.error);
         e.target.value = '';
         setSelectedFile(null);
-        setPreviewUrl(null);
+        setPreviewUrl(editingDish ? editingDish.image : null);
         return;
       }
       setSelectedFile(file);
@@ -65,34 +108,43 @@ const SpecialDishes = () => {
     }
   };
 
-  const handleAddSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedFile) {
-      alert("Please select an image");
+    if (!name.trim()) {
+      alert("Please enter a dish name");
       return;
     }
-    if (!name) {
-      alert("Please enter a dish name");
+    if (!editingDish && !selectedFile) {
+      alert("Please select an image");
       return;
     }
 
     setIsSubmitting(true);
     try {
       const formData = new FormData();
-      formData.append('name', name);
-      formData.append('category', category);
-      formData.append('ordering', ordering);
-      formData.append('image', selectedFile);
+      formData.append('name', name.trim());
+      formData.append('category', category.trim() || 'General');
+      formData.append('ordering', ordering || '0');
+      if (selectedFile) {
+        formData.append('image', selectedFile);
+      }
 
-      await apiFetch('/popular-dishes', {
-        method: 'POST',
-        body: formData
-      });
+      if (editingDish) {
+        await apiFetch(`/popular-dishes/${editingDish._id}`, {
+          method: 'PUT',
+          body: formData
+        });
+      } else {
+        await apiFetch('/popular-dishes', {
+          method: 'POST',
+          body: formData
+        });
+      }
 
       closeModal();
       fetchDishes();
     } catch (err: any) {
-      alert(err.message || 'Error uploading dish');
+      alert(err.message || 'Error saving dish');
     } finally {
       setIsSubmitting(false);
     }
@@ -109,7 +161,8 @@ const SpecialDishes = () => {
     }
   };
 
-  const openModal = () => {
+  const openAddModal = () => {
+    setEditingDish(null);
     setName('');
     setCategory('');
     setOrdering('0');
@@ -119,8 +172,20 @@ const SpecialDishes = () => {
     setIsModalOpen(true);
   };
 
+  const openEditModal = (dish: SpecialDish) => {
+    setEditingDish(dish);
+    setName(dish.name);
+    setCategory(dish.category || '');
+    setOrdering(dish.ordering?.toString() || '0');
+    setSelectedFile(null);
+    setPreviewUrl(dish.image);
+    setIsAddingCategory(false);
+    setIsModalOpen(true);
+  };
+
   const closeModal = () => {
     setIsModalOpen(false);
+    setEditingDish(null);
   };
 
   return (
@@ -130,7 +195,7 @@ const SpecialDishes = () => {
           <h1>Special Dishes</h1>
           <p>Manage the highlighted popular dishes displayed on the user app home screen.</p>
         </div>
-        <button className="btn-add" onClick={openModal}>
+        <button className="btn-add" onClick={openAddModal}>
           <Plus size={20} /> Add Special Dish
         </button>
       </div>
@@ -148,8 +213,11 @@ const SpecialDishes = () => {
               <div className="dish-image-container">
                 <img src={dish.image} alt={dish.name} className="dish-image" />
                 <div className="dish-actions">
+                  <button className="btn-icon edit" onClick={() => openEditModal(dish)} title="Edit Dish">
+                    <Edit2 size={16} />
+                  </button>
                   <button className="btn-icon delete" onClick={() => handleDelete(dish._id, dish.name)} title="Delete Dish">
-                    <Trash2 size={18} />
+                    <Trash2 size={16} />
                   </button>
                 </div>
               </div>
@@ -163,16 +231,16 @@ const SpecialDishes = () => {
         </div>
       )}
 
-      {/* Add Modal */}
+      {/* Add / Edit Modal */}
       {isModalOpen && createPortal(
         <div className="sd-modal-overlay" onClick={closeModal}>
           <div className="sd-modal-content" onClick={e => e.stopPropagation()}>
             <div className="sd-modal-header">
-              <h2>Add Special Dish</h2>
+              <h2>{editingDish ? 'Edit Special Dish' : 'Add Special Dish'}</h2>
               <button className="close-btn" onClick={closeModal}>&times;</button>
             </div>
 
-            <form onSubmit={handleAddSubmit}>
+            <form onSubmit={handleFormSubmit}>
               <div className="sd-modal-body">
                 <div className="form-group">
                   <label>Dish Name *</label>
@@ -191,20 +259,20 @@ const SpecialDishes = () => {
                     <div style={{ display: 'flex', gap: '10px' }}>
                       <input
                         type="text"
-                        placeholder="New Category Name"
+                        placeholder="New Category Name (e.g. Rolls, Shakes)"
                         value={category}
                         onChange={e => setCategory(e.target.value)}
                         style={{ flex: 1 }}
+                        autoFocus
                       />
                       <button 
                         type="button" 
                         onClick={() => {
                           setIsAddingCategory(false);
-                          setCategory('');
                         }}
-                        style={{ padding: '0 16px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}
+                        style={{ padding: '0 16px', background: '#64748b', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}
                       >
-                        Cancel
+                        Select Existing
                       </button>
                     </div>
                   ) : (
@@ -215,7 +283,7 @@ const SpecialDishes = () => {
                         style={{ flex: 1, padding: '12px', border: '1px solid var(--border-color)', borderRadius: '8px', backgroundColor: 'var(--input-bg)', color: 'var(--text-color)' }}
                       >
                         <option value="">-- Select Category --</option>
-                        {Array.from(new Set(dishes.map(d => d.category).filter(Boolean))).map(cat => (
+                        {allAvailableCategories.map(cat => (
                           <option key={cat} value={cat}>{cat}</option>
                         ))}
                       </select>
@@ -244,7 +312,7 @@ const SpecialDishes = () => {
                 </div>
 
                 <div className="form-group">
-                  <label>Dish Image *</label>
+                  <label>Dish Image {editingDish ? '(Leave unchanged or pick new)' : '*'}</label>
                   {previewUrl ? (
                     <div className="image-preview">
                       <img src={previewUrl} alt="Preview" />
@@ -258,13 +326,13 @@ const SpecialDishes = () => {
                   <div className="file-input-wrapper">
                     <button type="button" className="btn-upload" style={{ backgroundColor: '#3b82f6', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '1rem', boxShadow: '0 4px 6px rgba(59, 130, 246, 0.2)' }}>
                       <ImageIcon size={20} />
-                      {selectedFile ? selectedFile.name : "Click here to choose an Image"}
+                      {selectedFile ? selectedFile.name : (editingDish ? "Click to change Image" : "Click here to choose an Image")}
                     </button>
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleFileChange}
-                      required={!selectedFile}
+                      required={!editingDish && !selectedFile}
                       style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
                     />
                   </div>
@@ -276,8 +344,8 @@ const SpecialDishes = () => {
 
               <div className="sd-modal-footer">
                 <button type="button" className="btn-cancel" onClick={closeModal}>Cancel</button>
-                <button type="submit" className="btn-submit" disabled={isSubmitting || !selectedFile || !name}>
-                  {isSubmitting ? 'Uploading...' : 'Add Dish'}
+                <button type="submit" className="btn-submit" disabled={isSubmitting || (!editingDish && !selectedFile) || !name.trim()}>
+                  {isSubmitting ? 'Saving...' : (editingDish ? 'Update Dish' : 'Add Dish')}
                 </button>
               </div>
             </form>
